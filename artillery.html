@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, xxxmaximum-scale=1.0, xxxuser-scalable=no">
+<title>Artillery - Apple ][ clone</title>
+
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+	background: #000;
+	color: #fff;
+	text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
+  }
+
+  #container {
+    background: #333;
+    padding: 8px;
+    box-sizing: border-box;
+	justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  canvas {
+    width: 100%;
+    height: auto;
+    max-width: 720px;
+    aspect-ratio: 320 / 200;
+    image-rendering: pixelated;
+    background: black;
+    display: block;
+    border: 4px solid #fff;
+  }
+
+  .note {
+    font-family: monospace;
+    font-size: 16px;
+    text-align: center;
+    margin: 0;
+    color: #fff;
+  }
+  
+  #scanlines-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(transparent, transparent 0px, rgba(0, 0, 0, 0.5) 1px, transparent 2px);
+    background-size: 100% 4px;
+    opacity: 1;
+  }
+  
+  #touch-controls {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+	align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+	width: 100%;
+	font-family: monospace;
+    font-size: 16px;
+  }
+  #touch-controls button {
+    font-family: monospace;
+    font-size: 14px;
+    padding: 4px 6px;
+    background: #111;
+    color: #0f0;
+    border: 1px solid #0f0;
+    flex: 1;
+    min-width: 40px;
+  }
+  #touch-controls button:active {
+    background: #0f0;
+    color: #000;
+  }
+</style>
+</head>
+<body>
+<div id="scanlines-overlay"></div>
+<div id="container">
+  <div class="note">Artillery - Apple ][ clone</div>
+  <canvas id="game" width="320" height="200"></canvas>
+  
+  <div id="touch-controls">
+    CONTROLS:
+    <button type="button" data-act="left">↙ ANGLE−</button>
+    <button type="button" data-act="right">↘ ANGLE+</button>
+    <button type="button" data-act="power-up">↑ POWER+</button>
+    <button type="button" data-act="power-down">↓ POWER−</button>
+    <button type="button" data-act="fire">(SPACE) FIRE</button>
+    <button type="button" data-act="reset">R RESET</button>
+  </div>
+</div>
+
+<script type="text/javascript">
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d', {alpha:false});
+const W = canvas.width, H = canvas.height;
+
+
+function resizeCanvas() {
+  // Mantiene il rapporto originale 16:10 (320x200)
+  const aspect = W / H;
+  const maxW = window.innerWidth * 0.95;
+  const maxH = window.innerHeight * 0.85;
+
+  let newW = maxW;
+  let newH = newW / aspect;
+  if (newH > maxH) {
+    newH = maxH;
+    newW = newH * aspect;
+  }
+
+  canvas.style.width = `${newW}px`;
+  canvas.style.height = `${newH}px`;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+
+
+// Palette Apple II–style
+const COLORS = {
+  bg: '#000',
+  green: '#0A0',
+  groundDark: '#080',
+  cyan: '#8CF',
+  white: '#FFF',
+  purple: '#C8F',
+  yellow: '#FF8'
+};
+
+let terrain = new Uint8Array(W);
+let projectile = null;
+let message = '';
+let msgTimer = 0;
+let frame = 0;
+
+// players
+const players = [
+  { name:"PLAYER 1", color: COLORS.cyan,   x:30,  angle:60,  power:50, isAI:false },
+  { name:"PLAYER 2", color: COLORS.purple, x:280, angle:60, power:50, isAI:true }
+];
+let currentPlayer = 0;
+let wind = 0;
+
+// ------------------------------------------------
+// TERRAIN GENERATION
+function genTerrain() { Math.random() < 0.5 ? genTerrainGradino() : genTerrainPicco(); }
+
+function genTerrainPicco() {
+  // Assumi che W (larghezza), H (altezza) e terrain siano definiti
+  // e che terrain sia un array di lunghezza W (e.g., let terrain = new Uint8Array(W);)
+  const altoASinistra = Math.random() < 0.5;
+  const piccoParabolico = Math.random() < 0.5;
+  
+  const baseHeightLeft = (altoASinistra ? 120 : 40 ) + Math.random() * 20;
+  const baseHeightRight = (altoASinistra? 40 : 120) + (Math.random() * 30 - 15);
+  const stepX = Math.floor(W / 2); // Centro del picco
+
+  // Parametri del Picco
+  const PEAK_HEIGHT = 20 + Math.random() * 20; // Altezza massima aggiuntiva del picco (tra 80 e 120)
+  const PEAK_WIDTH = 30; // Larghezza base del picco (più piccolo è, più è appuntito)
+
+  for (let x = 0; x < W; x++) {
+    let height;
+
+    // 1. Calcola l'altezza di base (i lati piatti)
+    if (x < stepX) {
+      // Lato sinistro: pianeggiante con leggere ondulazioni
+      height = baseHeightLeft + Math.sin(x / 20) * 3;
+    } else {
+      // Lato destro: più alto e ondulato
+      height = baseHeightRight + Math.sin(x / 20) * 3;
+    }
+
+    // 2. Aggiungi la forma del Picco Centrale (Parabola)
+    const distanceToCenter = Math.abs(x - stepX);
+
+    if (distanceToCenter < PEAK_WIDTH && ((x >= stepX && !altoASinistra) || (x < stepX && altoASinistra))) {
+	  let mountainHeight = 0;
+	  if(piccoParabolico) {
+		// Calcola quanto siamo lontani dal centro (ratio va da 0 a 1)
+		const ratio = distanceToCenter / PEAK_WIDTH;
+		// Funzione parabolica (1 - ratio^2) per creare un picco a forma di collina
+		mountainHeight = PEAK_HEIGHT * (1 - ratio * ratio);
+	  }
+	  else {
+		const safeDistance = Math.max(distanceToCenter, 1); // evita 1/0
+		const inverseFalloff = 1 / safeDistance; // più vicino al centro = valore più alto
+
+		// Normalizza l'inverseFalloff tra 0 e 1
+		const maxInverse = 1 / 1;         // quando distance = 1
+		const minInverse = 1 / PEAK_WIDTH; // quando distance = PEAK_WIDTH
+		const normalized = (inverseFalloff - minInverse) / (maxInverse - minInverse);
+		
+		mountainHeight = PEAK_HEIGHT * normalized;
+      }
+	  
+      // Sovrapponi il picco all'altezza di base.
+      height += mountainHeight;
+    }
+
+    // 3. Clamping e Arrotondamento
+    // Il limite superiore è H - 40 per lasciare spazio sotto, 6 è il limite superiore dello schermo
+    terrain[x] = Math.max(6, Math.min(H - 40, Math.round(height)));
+  }
+}
+
+function genTerrainGradino() {
+  const baseHeightLeft = 40 + Math.random() * 20;
+  const baseHeightRight = 120 + (Math.random() * 30 - 15);
+  const stepX = Math.floor(W / 2); // posizione del gradino
+
+  for (let x = 0; x < W; x++) {
+    let height;
+
+    if (x < stepX) {
+      // lato sinistro: pianeggiante con leggere ondulazioni
+      height = baseHeightLeft + Math.sin(x / 25) * 2;
+    } else if (x  === stepX) {
+      // gradino verticale
+      height = (baseHeightLeft + baseHeightRight) / 2;
+    } else {
+      // lato destro: più alto e ondulato
+      height = baseHeightRight + Math.sin(x / 25) * 2;
+    }
+
+    terrain[x] = Math.max(6, Math.min(H - 40, Math.round(height)));
+  }
+
+  // lisciatura leggera solo ai bordi del gradino
+  for (let i = stepX - 2; i <= stepX + 2; i++) {
+    if (i > 0 && i < W - 1) {
+      terrain[i] = Math.round((terrain[i - 1] + terrain[i] + terrain[i + 1]) / 3);
+    }
+  }
+}
+
+
+function reset() {
+  genTerrain();
+  wind = (Math.random()*40 - 20)|0;
+  projectile = null;
+  message = '';
+  msgTimer = 0;
+  currentPlayer = 0;
+}
+reset();
+
+// ------------------------------------------------
+// INPUT
+const keys = {};
+let inputMode = null; // "angle" o "power"
+let inputBuffer = "";
+
+window.addEventListener('keydown', e => {
+  const key = e.key;
+  if (key === ' ') e.preventDefault();
+  if (key === 'r' || key === 'R') reset();
+
+  // Modalità inserimento
+  if (key === 'a' || key === 'A') {
+    inputMode = "angle";
+    inputBuffer = "";
+  } else if (key === 'p' || key === 'P') {
+    inputMode = "power";
+    inputBuffer = "";
+  } else if (inputMode && /^[0-9]$/.test(key)) {
+    inputBuffer += key;
+  } else if (inputMode && (key === 'Enter' || key === 'Return')) {
+    const value = parseInt(inputBuffer);
+    const p = players[currentPlayer];
+    if (inputMode === "angle") p.angle = Math.max(0, Math.min(180, value)) | 0;
+    if (inputMode === "power") p.power = Math.max(5, Math.min(100, value)) | 0;
+    inputMode = null;
+    inputBuffer = "";
+  }
+
+  keys[key] = true;
+});
+
+window.addEventListener('keyup', e=>{ keys[e.key] = false });
+
+const gravity = 0.05;//9.8
+// ------------------------------------------------
+// LAUNCH PROJECTILE
+function launch(player) {
+  if (projectile) return;
+  playShootSound();
+  
+  let a = player.angle * Math.PI / 180;
+  let v = gravity * player.power;
+  let vx = v * Math.cos(a) * (player.x < W/2 ? 1 : -1);
+  let vy = -v * Math.sin(a);
+  projectile = {
+    x: player.x,
+    y: (H - terrain[player.x]) - 2,
+    vx: vx,
+    vy: vy,
+    ax: wind/1000,
+    ay: gravity,
+    owner: player
+  };
+}
+
+// ------------------------------------------------
+// EXPLOSION
+// ------------------------------------------------
+// EXPLOSION
+function explode(x,y,radius, destroy=false) {
+    
+  playExplosionSound(); 
+
+  // crea un piccolo cratere
+  const ix = Math.floor(x);
+  for (let dx = -radius-1; dx <= radius+1; dx++) {
+    const sx = ix + dx;
+    if (sx < 0 || sx >= W) continue;
+    const dist = Math.abs(dx);
+    if (dist <= radius) {
+      const drop = Math.round((radius - dist) * (0.8 + Math.random()*0.4));
+      terrain[sx] = Math.max(0, terrain[sx] - drop);
+    }
+  }
+  
+  // controlla se colpisce un cannone
+  for (let p of players) {
+    const px = p.x;
+	const py = H - terrain[p.x];
+    const dist = Math.hypot(x - px, y - py);
+    
+    // Controlliamo TUTTI i giocatori
+    if (dist < radius + 10) {
+        
+        // Se un giocatore è stato colpito
+        playTankExplosionSound(); 
+		spawnCannonExplosion(px,py);
+
+        const isSelfHit = p === projectile.owner;
+        const targetName = isSelfHit ? "HIMSELF" : p.name;
+        const attackerName = projectile.owner.name;
+
+        message = `${attackerName} DESTROYS ${targetName}!`;
+        msgTimer = 240;
+        projectile = null;
+        
+        // Fine del gioco/Reset se un cannone è stato colpito
+        setTimeout(reset, 3000); 
+        return;
+    }
+  }
+  
+  // fine turno
+  projectile = null;
+  nextTurn();
+}
+
+//gestione esplosione
+let explosions = []; // elenco esplosioni colorate attive
+function spawnCannonExplosion(px, py) {
+  for (let i = 0; i < 10; i++) {
+    const angle = Math.PI + (Math.PI / 10) * i;
+    const speed = Math.random() * 1;
+    const vx = Math.cos(angle) * speed;
+    const vy = Math.sin(angle) * speed;
+    explosions.push({
+      x: px,
+      y: py,
+      vx: vx,
+      vy: vy,
+      life: 60 + Math.random() * 20, // frame di durata
+      color: i%4 == 0 ? COLORS.white : i%4 == 1 ? COLORS.yellow : i%4 == 2 ? COLORS.cyan : COLORS.purple
+    });
+  }
+}
+
+
+// ------------------------------------------------
+// TURN MANAGEMENT
+function nextTurn() {
+  currentPlayer = (currentPlayer + 1) % players.length;
+  if (players[currentPlayer].isAI) {
+    setTimeout(aiShoot, 2000);
+  }
+}
+
+// IA molto semplice: stima direzione e spara con potenza casuale
+function aiShoot() {
+  const ai = players[currentPlayer];
+  const target = players[0];
+  const dx = (target.x - ai.x);
+  ai.angle = (60 + Math.random()*30) | 0;//int
+  ai.power = Math.min(100, Math.abs(dx)/3 + Math.random()*10) | 0;
+  launch(ai);
+}
+
+// ------------------------------------------------
+// UPDATE LOOP
+function update() {
+  frame++;
+
+  const p = players[currentPlayer];
+  if (!p.isAI) {
+    if (keys['ArrowRight']) p.angle = (Math.max(0, p.angle+ (currentPlayer == 0 ? -1 : 1))) | 0;
+    if (keys['ArrowLeft']) p.angle = (Math.min(180, p.angle+ (currentPlayer == 0 ? 1 : -1 ))) | 0;
+    if (keys['ArrowUp']) p.power = (Math.min(100, p.power+1)) | 0;
+    if (keys['ArrowDown']) p.power = (Math.max(5, p.power-1))| 0;
+    if (keys[' '] ) { launch(p); keys[' '] = false; }
+  }
+
+  if (projectile) {
+    projectile.vx += projectile.ax;
+    projectile.vy += projectile.ay;
+    projectile.x += projectile.vx;
+    projectile.y += projectile.vy;
+    const xidx = Math.floor(projectile.x);
+    if (xidx >= 0 && xidx < W) {
+      const groundY = H - terrain[xidx];
+      if (projectile.y >= groundY) {
+        explode(projectile.x, projectile.y, 10);
+      }
+    }
+    if (projectile && (projectile.x < -20 || projectile.x > W+20 || projectile.y > H+20)) {
+      projectile = null;
+      nextTurn();
+    }
+  }
+  
+  // aggiorna esplosioni radiali
+  for (let i = explosions.length - 1; i >= 0; i--) {
+    const e = explosions[i];
+    e.x += e.vx;
+    e.y += e.vy;
+    e.life--;
+    if (e.life <= 0) explosions.splice(i, 1);
+  }
+
+  if (msgTimer > 0) msgTimer--;
+  if (msgTimer === 0) message = '';
+}
+
+// ------------------------------------------------
+// DRAW
+function draw() {
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0,0,W,H);
+
+  for (let x=0;x<W;x++){
+    const h = terrain[x];
+    ctx.fillStyle = (x % 2 === 0) ? COLORS.green : COLORS.groundDark;
+    ctx.fillRect(x, H - h, 1, h);
+  }
+
+  // draw players
+  for (let p of players) drawGun(p);
+  
+  // flag
+  drawWindFlag();
+
+  if (projectile) {
+    ctx.fillStyle = COLORS.white;
+    ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
+  }
+
+  // disegna esplosioni radiali
+  for (const e of explosions) {
+    const alpha = Math.max(0, e.life / 60);
+    ctx.strokeStyle = e.color;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.moveTo(e.x, e.y);
+    ctx.lineTo(e.x + e.vx * 30, e.y + e.vy * 30);
+    ctx.stroke();
+    ctx.globalAlpha = 1.0;
+  }
+
+
+  drawHUD();
+}
+
+function drawGun(p) {
+  const y = (H - terrain[p.x]) - 2;
+  
+  // CORPO del cannone
+  ctx.fillStyle = p.color;
+  ctx.fillRect(p.x - 3, y, 6, 2);
+
+  // CANNA del cannone
+  const a = p.angle * Math.PI / 180;
+  const len = 6;
+  const dir = (p.x < W/2 ? 1 : -1);
+  const bx = p.x + Math.cos(a) * len * dir;
+  const by = y - Math.sin(a) * len;
+  ctx.beginPath();
+  ctx.moveTo(p.x, y);
+  ctx.lineTo(bx, by);
+  ctx.strokeStyle = p.color;
+  ctx.stroke();
+}
+
+function drawWindFlag() {
+  const flagX = players[1].x + 20;
+  const flagY = H - terrain[flagX]; // altezza del terreno in quel punto
+  
+  // Asta verticale
+  ctx.strokeStyle = COLORS.white;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(flagX, flagY);
+  ctx.lineTo(flagX, flagY - 10);
+  ctx.stroke();
+
+  // Rettangolo bandiera
+  ctx.fillStyle = COLORS.yellow;
+  const rectWidth = 8;
+  const rectHeight = 4;
+
+  if (wind >= 0) {
+    // bandiera verso destra
+    ctx.fillRect(flagX, flagY - 10, rectWidth, rectHeight);
+  } else {
+    // bandiera verso sinistra
+    ctx.fillRect(flagX - rectWidth, flagY - 10, rectWidth, rectHeight);
+  }
+}
+
+
+function drawHUD() {
+  const p = players[currentPlayer];
+  
+  ctx.font = "10px monospace";
+  ctx.textBaseline = "alphabetic";
+  //player
+  ctx.fillStyle = p.color;  
+  ctx.fillText(`${p.name}`, 6, H - 12);
+  //potenza/angolo
+  ctx.fillStyle = COLORS.white;
+  ctx.fillText("POWER: " + p.power, 6, H - 2);
+  ctx.fillText("ANGLE: " + p.angle, 64, H - 2);
+  //vento
+  ctx.fillText("WIND: "+wind, 260, H - 2);
+
+  // TURNO CORRENTE
+  ctx.fillStyle = COLORS.white;
+  ctx.fillText("TURN: " + p.name, 6, H - 24);
+
+  //messaggio
+  if (message) {
+    ctx.fillStyle = COLORS.white;
+    ctx.font = "10px monospace";
+    const tw = ctx.measureText(message).width;
+    ctx.fillText(message, (W - tw)/2, H - 12);
+  }
+}
+
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); // Assicurati che sia definito una sola volta
+
+function playExplosionSound() {
+    const now = audioCtx.currentTime;
+
+    // 1. Crea un generatore di Rumore Bianco (Noise Buffer)
+    const bufferSize = audioCtx.sampleRate * 0.5; // 0.5 secondi
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1; // Riempie il buffer con rumore casuale (statico)
+    }
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    // 2. Crea i nodi di Guadagno e Filtro
+    const noiseGain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+
+    // Imposta il filtro per un suono "sordo" e breve (filtro passa basso)
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1000, now); // Frequenza di taglio iniziale
+    filter.frequency.exponentialRampToValueAtTime(10, now + 0.3); // Decadimento rapido della frequenza
+
+    // Connessioni: Rumore -> Filtro -> Guadagno -> Destinazione
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+
+    // 3. Envelope (ADSR)
+    noiseGain.gain.setValueAtTime(0.5, now); // Volume iniziale
+    // Decay rapido del volume (il "botto" finisce subito)
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3); 
+
+    // 4. Avvia e Ferma
+    noise.start(now);
+    noise.stop(now + 0.3);
+}
+
+function playShootSound() {
+    // 1. Crea l'oscillatore (il "generatore di suono")
+    const oscillator = audioCtx.createOscillator();
+    // Usa un'onda quadra per un suono "pixelato" o un'onda a dente di sega (sawtooth)
+    oscillator.type = 'square'; 
+
+    // 2. Crea un nodo del guadagno (Gain Node) per controllare il volume e l'ADSR
+    const gainNode = audioCtx.createGain();
+    
+    // Connetti: Oscillatore -> Guadagno -> Destinazione (altoparlanti)
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    const now = audioCtx.currentTime;
+
+    // 3. Imposta la Frequenza Iniziale e Finale (per il "pitch-drop" o "fall")
+    const startFreq = 400; // Frequenza iniziale (più alta)
+    const endFreq = 200;   // Frequenza finale (più bassa)
+    const duration = 0.15; // Durata breve in secondi
+
+    oscillator.frequency.setValueAtTime(startFreq, now);
+    // Diminuisci rapidamente la frequenza (effetto laser/sparo 8-bit)
+    oscillator.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+
+    // 4. Imposta il Volume (Envelope)
+    gainNode.gain.setValueAtTime(0.5, now); // Volume iniziale
+    // Riduci rapidamente il volume
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration); 
+    
+    // 5. Avvia e Ferma l'oscillatore
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+}
+
+function playTankExplosionSound() {
+    const now = audioCtx.currentTime;
+    const duration = 0.5; // Durata maggiore per l'esplosione del carro armato
+
+    // 1. Rumore Bianco (Il "Bot")
+    const bufferSize = audioCtx.sampleRate * duration;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1; 
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const noiseGain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2000, now);
+    filter.frequency.exponentialRampToValueAtTime(10, now + duration);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    
+    // 2. Tono Basso (L'effetto "WAAAH")
+    const oscillator = audioCtx.createOscillator();
+    oscillator.type = 'sawtooth'; // Tono più ricco di armoniche
+    
+    const oscGain = audioCtx.createGain();
+    
+    // Connessioni per il Tono:
+    oscillator.connect(oscGain);
+
+    // Envelope del Tono: Pitch Drop
+    oscillator.frequency.setValueAtTime(100, now); // Frequenza iniziale bassa
+    oscillator.frequency.exponentialRampToValueAtTime(10, now + duration); // Crolla a 10Hz
+
+    // 3. Unione e Decadimento del Guadagno
+    
+    // Volume del Rumore
+    noiseGain.gain.setValueAtTime(0.6, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration); 
+
+    // Volume del Tono
+    oscGain.gain.setValueAtTime(0.3, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration); 
+
+    // Unisci i due suoni e invia alla destinazione
+    noiseGain.connect(audioCtx.destination);
+    oscGain.connect(audioCtx.destination);
+
+    // 4. Avvia e Ferma
+    noise.start(now);
+    noise.stop(now + duration);
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+}
+
+
+
+
+// ------------------------------------------------
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+canvas.addEventListener('click', ()=> {
+  if (!players[currentPlayer].isAI) launch(players[currentPlayer]);
+});
+
+//touch
+document.getElementById('touch-controls').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const p = players[currentPlayer];
+  switch (act) {
+    case 'left':  p.angle = Math.min(180, p.angle + (currentPlayer ? -1 : 1)); break;
+    case 'right': p.angle = Math.max(0, p.angle - (currentPlayer ? -1 : 1)); break;
+    case 'power-up':   p.power = Math.min(100, p.power + 2); break;
+    case 'power-down': p.power = Math.max(5, p.power - 2); break;
+    case 'fire': launch(p); break;
+    case 'reset': reset(); break;
+  }
+  btn.blur();
+});
+
+</script>
+</body>
+</html>
