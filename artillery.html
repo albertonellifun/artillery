@@ -56,6 +56,7 @@
     background: repeating-linear-gradient(transparent, transparent 0px, rgba(0, 0, 0, 0.5) 1px, transparent 2px);
     background-size: 100% 4px;
     opacity: 1;
+	display:none;
   }
   
   #touch-controls {
@@ -93,12 +94,13 @@
   
   <div id="touch-controls">
     CONTROLS:
-    <button type="button" data-act="left">↙ ANGLE−</button>
-    <button type="button" data-act="right">↘ ANGLE+</button>
+    <button type="button" data-act="left">&lt;- ANGLE−</button>
+    <button type="button" data-act="right">-&gt; ANGLE+</button>
     <button type="button" data-act="power-up">↑ POWER+</button>
     <button type="button" data-act="power-down">↓ POWER−</button>
     <button type="button" data-act="fire">(SPACE) FIRE</button>
     <button type="button" data-act="reset">R RESET</button>
+	<button type="button" data-act="scanlines">S SCANLINES</button>
   </div>
 </div>
 
@@ -131,19 +133,19 @@ resizeCanvas();
 
 // Palette Apple II–style
 const COLORS = {
-  bg: '#000',
+  black: '#000',
   green: '#0A0',
-  groundDark: '#080',
+  darkGreen: '#080',
   cyan: '#8CF',
   white: '#FFF',
   purple: '#C8F',
-  yellow: '#FF8'
+  yellow: '#FF8',
+  orange: '#F80'
 };
 
 let terrain = new Uint8Array(W);
 let projectile = null;
 let message = '';
-let msgTimer = 0;
 let frame = 0;
 
 // players
@@ -153,11 +155,49 @@ const players = [
 ];
 let currentPlayer = 0;
 let wind = 0;
+let gameover = true;
 
 // ------------------------------------------------
 // TERRAIN GENERATION
-function genTerrain() { Math.random() < 0.5 ? genTerrainGradino() : genTerrainPicco(); }
+function genTerrain() { 
+	const terrainGenerators = [ genTerrainPicco, genTerrainGradino, genTerrainDune  ];
+	const randomIndex = (Math.random() * terrainGenerators.length) | 0;
+	terrainGenerators[randomIndex]();
 
+	//appiattisce terreno sotto la bandiera come sul gioco originale
+	const flagX = players[1].x + 25;  
+	for(let i=flagX-5;i<W;i++) { 
+		terrain[i] = terrain[flagX-5]; 
+	}
+	
+	//arrotonda i picchi
+	if(randomIndex !== 0) roundTerrain();
+}
+
+//arrotondamento leggero del terreno
+function roundTerrain() { 
+  for (let i = 1; i < W - 1; i++) {
+    terrain[i] = Math.round((terrain[i - 1] + terrain[i] + terrain[i + 1]) / 3);
+  }
+}
+
+//due dune
+function genTerrainDune() {
+  const baseHeight = 80 + Math.random() * 30; // altezza media del terreno
+  const amplitude = 10 + Math.random() * 30;   // intensità delle ondulazioni
+  const slopeFactor = (Math.random() * 0.2) - 0.1; // pendenza verso destra o sinistra random
+
+  for (let x = 0; x < W; x++) {
+    // Collina dolce con pendenza verso destra e leggere ondulazioni
+    const slope = x * slopeFactor;
+    const wave = Math.sin(x / 30) * amplitude;
+    const height = baseHeight - slope + wave;
+
+    terrain[x] = Math.max(6, Math.min(H - 40, Math.round(height)));
+  }
+}
+
+//picco al centro (parabola o iperbole)
 function genTerrainPicco() {
   // Assumi che W (larghezza), H (altezza) e terrain siano definiti
   // e che terrain sia un array di lunghezza W (e.g., let terrain = new Uint8Array(W);)
@@ -184,7 +224,7 @@ function genTerrainPicco() {
       height = baseHeightRight + Math.sin(x / 20) * 3;
     }
 
-    // 2. Aggiungi la forma del Picco Centrale (Parabola)
+    // 2. Aggiungi la forma del Picco Centrale (Parabola o Iperbole)
     const distanceToCenter = Math.abs(x - stepX);
 
     if (distanceToCenter < PEAK_WIDTH && ((x >= stepX && !altoASinistra) || (x < stepX && altoASinistra))) {
@@ -197,7 +237,7 @@ function genTerrainPicco() {
 	  }
 	  else {
 		const safeDistance = Math.max(distanceToCenter, 1); // evita 1/0
-		const inverseFalloff = 1 / safeDistance; // più vicino al centro = valore più alto
+		const inverseFalloff = 1 / (safeDistance/2); // più vicino al centro = valore più alto
 
 		// Normalizza l'inverseFalloff tra 0 e 1
 		const maxInverse = 1 / 1;         // quando distance = 1
@@ -227,35 +267,34 @@ function genTerrainGradino() {
 
     if (x < stepX) {
       // lato sinistro: pianeggiante con leggere ondulazioni
-      height = baseHeightLeft + Math.sin(x / 25) * 2;
+      height = baseHeightLeft + Math.sin(x / 25) * 4;
     } else if (x  === stepX) {
       // gradino verticale
       height = (baseHeightLeft + baseHeightRight) / 2;
     } else {
       // lato destro: più alto e ondulato
-      height = baseHeightRight + Math.sin(x / 25) * 2;
+      height = baseHeightRight + Math.sin(x / 25) * 4;
     }
 
     terrain[x] = Math.max(6, Math.min(H - 40, Math.round(height)));
   }
-
-  // lisciatura leggera solo ai bordi del gradino
-  for (let i = stepX - 2; i <= stepX + 2; i++) {
-    if (i > 0 && i < W - 1) {
-      terrain[i] = Math.round((terrain[i - 1] + terrain[i] + terrain[i + 1]) / 3);
-    }
-  }
 }
 
+//vento
+function randomizeWind() {
+  wind = (Math.random() * 32 - 16) | 0;
+}
 
+//reset
 function reset() {
   genTerrain();
-  wind = (Math.random()*40 - 20)|0;
+  randomizeWind();
   projectile = null;
   message = '';
-  msgTimer = 0;
   currentPlayer = 0;
+  gameover = false;
 }
+
 reset();
 
 // ------------------------------------------------
@@ -265,9 +304,13 @@ let inputMode = null; // "angle" o "power"
 let inputBuffer = "";
 
 window.addEventListener('keydown', e => {
+  if (players[currentPlayer].isAI) return;
+  if (gameover) return;
+  
   const key = e.key;
   if (key === ' ') e.preventDefault();
   if (key === 'r' || key === 'R') reset();
+  if (key === 's' || key === 'S') changeScanLines();
 
   // Modalità inserimento
   if (key === 'a' || key === 'A') {
@@ -293,6 +336,7 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e=>{ keys[e.key] = false });
 
 const gravity = 0.05;//9.8
+
 // ------------------------------------------------
 // LAUNCH PROJECTILE
 function launch(player) {
@@ -316,9 +360,7 @@ function launch(player) {
 
 // ------------------------------------------------
 // EXPLOSION
-// ------------------------------------------------
-// EXPLOSION
-function explode(x,y,radius, destroy=false) {
+function explode(x, y, radius) {
     
   playExplosionSound(); 
 
@@ -341,7 +383,7 @@ function explode(x,y,radius, destroy=false) {
     const dist = Math.hypot(x - px, y - py);
     
     // Controlliamo TUTTI i giocatori
-    if (dist < radius + 10) {
+    if (dist < radius + 5) {
         
         // Se un giocatore è stato colpito
         playTankExplosionSound(); 
@@ -352,8 +394,8 @@ function explode(x,y,radius, destroy=false) {
         const attackerName = projectile.owner.name;
 
         message = `${attackerName} DESTROYS ${targetName}!`;
-        msgTimer = 240;
         projectile = null;
+		gameover = true;
         
         // Fine del gioco/Reset se un cannone è stato colpito
         setTimeout(reset, 3000); 
@@ -366,9 +408,10 @@ function explode(x,y,radius, destroy=false) {
   nextTurn();
 }
 
-//gestione esplosione
+//gestione esplosione cannone
 let explosions = []; // elenco esplosioni colorate attive
 function spawnCannonExplosion(px, py) {
+  const colors = [COLORS.white, COLORS.yellow, COLORS.purple, COLORS.cyan];
   for (let i = 0; i < 10; i++) {
     const angle = Math.PI + (Math.PI / 10) * i;
     const speed = Math.random() * 1;
@@ -379,8 +422,8 @@ function spawnCannonExplosion(px, py) {
       y: py,
       vx: vx,
       vy: vy,
-      life: 60 + Math.random() * 20, // frame di durata
-      color: i%4 == 0 ? COLORS.white : i%4 == 1 ? COLORS.yellow : i%4 == 2 ? COLORS.cyan : COLORS.purple
+      life: 40 + Math.random() * 40, // frame di durata
+      color: colors[i % colors.length]
     });
   }
 }
@@ -390,6 +433,7 @@ function spawnCannonExplosion(px, py) {
 // TURN MANAGEMENT
 function nextTurn() {
   currentPlayer = (currentPlayer + 1) % players.length;
+  randomizeWind();
   if (players[currentPlayer].isAI) {
     setTimeout(aiShoot, 2000);
   }
@@ -412,10 +456,10 @@ function update() {
 
   const p = players[currentPlayer];
   if (!p.isAI) {
-    if (keys['ArrowRight']) p.angle = (Math.max(0, p.angle+ (currentPlayer == 0 ? -1 : 1))) | 0;
-    if (keys['ArrowLeft']) p.angle = (Math.min(180, p.angle+ (currentPlayer == 0 ? 1 : -1 ))) | 0;
-    if (keys['ArrowUp']) p.power = (Math.min(100, p.power+1)) | 0;
-    if (keys['ArrowDown']) p.power = (Math.max(5, p.power-1))| 0;
+    if (keys['ArrowRight']) p.angle = (Math.max(0, p.angle + (currentPlayer ? 1 : -1))) | 0;
+    if (keys['ArrowLeft']) p.angle = (Math.min(180, p.angle + (currentPlayer ? -1 : 1))) | 0;
+    if (keys['ArrowUp']) p.power = (Math.min(100, p.power + 1)) | 0;
+    if (keys['ArrowDown']) p.power = (Math.max(5, p.power - 1))| 0;
     if (keys[' '] ) { launch(p); keys[' '] = false; }
   }
 
@@ -431,7 +475,7 @@ function update() {
         explode(projectile.x, projectile.y, 10);
       }
     }
-    if (projectile && (projectile.x < -20 || projectile.x > W+20 || projectile.y > H+20)) {
+    if (projectile && (projectile.x < -50 || projectile.x > W+50 || projectile.y > H+50)) {
       projectile = null;
       nextTurn();
     }
@@ -445,29 +489,28 @@ function update() {
     e.life--;
     if (e.life <= 0) explosions.splice(i, 1);
   }
-
-  if (msgTimer > 0) msgTimer--;
-  if (msgTimer === 0) message = '';
 }
 
 // ------------------------------------------------
 // DRAW
 function draw() {
-  ctx.fillStyle = COLORS.bg;
+  ctx.fillStyle = COLORS.black;
   ctx.fillRect(0,0,W,H);
 
+  //terrain
   for (let x=0;x<W;x++){
     const h = terrain[x];
-    ctx.fillStyle = (x % 2 === 0) ? COLORS.green : COLORS.groundDark;
+    ctx.fillStyle = (x % 2 === 0) ? COLORS.green : COLORS.darkGreen;
     ctx.fillRect(x, H - h, 1, h);
   }
 
-  // draw players
+  //players
   for (let p of players) drawGun(p);
   
-  // flag
+  //flag
   drawWindFlag();
 
+  //projectile
   if (projectile) {
     ctx.fillStyle = COLORS.white;
     ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
@@ -475,7 +518,7 @@ function draw() {
 
   // disegna esplosioni radiali
   for (const e of explosions) {
-    const alpha = Math.max(0, e.life / 60);
+    const alpha = Math.max(0, e.life / 30);
     ctx.strokeStyle = e.color;
     ctx.globalAlpha = alpha;
     ctx.beginPath();
@@ -489,12 +532,24 @@ function draw() {
   drawHUD();
 }
 
+//disegna cannoni
 function drawGun(p) {
   const y = (H - terrain[p.x]) - 2;
   
   // CORPO del cannone
+  //ctx.fillStyle = p.color;
+  //ctx.fillRect(p.x - 3, y, 6, 3);
+  
+  // CORPO del cannone: trapezio rovesciato
   ctx.fillStyle = p.color;
-  ctx.fillRect(p.x - 3, y, 6, 2);
+  ctx.beginPath();
+  ctx.moveTo(p.x - 5, y);     // punto in alto a sinistra
+  ctx.lineTo(p.x + 5, y);     // punto in alto a destra
+  ctx.lineTo(p.x + 4, y + 3); // punto in basso a destra
+  ctx.lineTo(p.x - 4, y + 3); // punto in basso a sinistra
+  ctx.closePath();
+  ctx.fill();
+  
 
   // CANNA del cannone
   const a = p.angle * Math.PI / 180;
@@ -509,33 +564,35 @@ function drawGun(p) {
   ctx.stroke();
 }
 
+//disegna bandiera
 function drawWindFlag() {
-  const flagX = players[1].x + 20;
-  const flagY = H - terrain[flagX]; // altezza del terreno in quel punto
+  const flagX = players[1].x + 25;
+  const flagY = H - terrain[flagX];//altezza del terreno in quel punto
   
-  // Asta verticale
+  //disegna asta
   ctx.strokeStyle = COLORS.white;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(flagX, flagY);
-  ctx.lineTo(flagX, flagY - 10);
+  ctx.lineTo(flagX, flagY - 12);
   ctx.stroke();
 
-  // Rettangolo bandiera
+  //disegna bandiera
   ctx.fillStyle = COLORS.yellow;
-  const rectWidth = 8;
+  let windIntensity = Math.abs(wind / 2) | 0;
+  const rectWidth = windIntensity;
   const rectHeight = 4;
 
   if (wind >= 0) {
-    // bandiera verso destra
-    ctx.fillRect(flagX, flagY - 10, rectWidth, rectHeight);
+    //bandiera verso destra
+    ctx.fillRect(flagX, flagY - 12, rectWidth, rectHeight);
   } else {
-    // bandiera verso sinistra
-    ctx.fillRect(flagX - rectWidth, flagY - 10, rectWidth, rectHeight);
+    //bandiera verso sinistra
+    ctx.fillRect(flagX - rectWidth, flagY - 12, rectWidth, rectHeight);
   }
 }
 
-
+//disegna dati player
 function drawHUD() {
   const p = players[currentPlayer];
   
@@ -547,9 +604,9 @@ function drawHUD() {
   //potenza/angolo
   ctx.fillStyle = COLORS.white;
   ctx.fillText("POWER: " + p.power, 6, H - 2);
-  ctx.fillText("ANGLE: " + p.angle, 64, H - 2);
+  ctx.fillText("ANGLE: " + p.angle, 66, H - 2);
   //vento
-  ctx.fillText("WIND: "+wind, 260, H - 2);
+  ctx.fillText("WIND: " + (wind > 0 ? '+':'') + wind, 262, H - 2);
 
   // TURNO CORRENTE
   ctx.fillStyle = COLORS.white;
@@ -565,6 +622,8 @@ function drawHUD() {
 }
 
 
+
+//SUONI
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); // Assicurati che sia definito una sola volta
 
 function playExplosionSound() {
@@ -697,6 +756,16 @@ function playTankExplosionSound() {
 }
 
 
+//gestione scanlines on/off
+let scanLinesEnabled = false;
+function changeScanLines() {
+	scanLinesEnabled = !scanLinesEnabled;
+	if (scanLinesEnabled) {
+		document.getElementById('scanlines-overlay').style.display = 'block';
+	} else {
+		document.getElementById('scanlines-overlay').style.display = 'none';
+		}
+}
 
 
 // ------------------------------------------------
@@ -705,13 +774,19 @@ function loop() {
   draw();
   requestAnimationFrame(loop);
 }
+
 loop();
+
 canvas.addEventListener('click', ()=> {
+  if (gameover) return;
   if (!players[currentPlayer].isAI) launch(players[currentPlayer]);
 });
 
 //touch
 document.getElementById('touch-controls').addEventListener('click', e => {
+  if (players[currentPlayer].isAI) return;
+  if (gameover) return;
+  
   const btn = e.target.closest('button');
   if (!btn) return;
   const act = btn.dataset.act;
@@ -719,10 +794,11 @@ document.getElementById('touch-controls').addEventListener('click', e => {
   switch (act) {
     case 'left':  p.angle = Math.min(180, p.angle + (currentPlayer ? -1 : 1)); break;
     case 'right': p.angle = Math.max(0, p.angle - (currentPlayer ? -1 : 1)); break;
-    case 'power-up':   p.power = Math.min(100, p.power + 2); break;
-    case 'power-down': p.power = Math.max(5, p.power - 2); break;
+    case 'power-up':   p.power = Math.min(100, p.power + 5); break;
+    case 'power-down': p.power = Math.max(5, p.power - 5); break;
     case 'fire': launch(p); break;
     case 'reset': reset(); break;
+	case 'scanlines': changeScanLines(); break;
   }
   btn.blur();
 });
