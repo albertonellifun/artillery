@@ -24,11 +24,12 @@
     background: #333;
     padding: 8px;
     box-sizing: border-box;
-	justify-content: center;
+	justify-content: space-evenly;
     display: flex;
     flex-direction: column;
     align-items: center;
-	max-width: 100vw;
+	width: 100vw;
+	height: 100vh;
   }
 
   canvas {
@@ -81,8 +82,8 @@
     background: #111;
     color: #0f0;
     border: 1px solid #0f0;
-    flex: 1 1 60px;
-    min-width: 60px;
+    flex: 1 1 80px;
+    min-width: 80px;
 	overflow: hidden;
 	text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
   }
@@ -91,9 +92,16 @@
     color: #000;
   }
   #touch-controls button.on {
-    background: #0f0;
+    background: #0f0 !important;
     color: #000;
+	text-shadow: 0 0 4px #000;
   }
+  #touch-controls button.c0 {
+	background-color: #000;
+  }
+  #touch-controls button.c1 {
+	background-color: #040;
+  } 
 </style>
 </head>
 <body>
@@ -104,14 +112,18 @@
   
   <div id="touch-controls">
     CONTROLS:
-    <button type="button" data-act="left">&lt;-<br/>ANGLE−</button>
-    <button type="button" data-act="right">-&gt;<br/>ANGLE+</button>
-    <button type="button" data-act="power-up">↑<br/>POWER+</button>
-    <button type="button" data-act="power-down">↓<br/>POWER−</button>
-    <button type="button" data-act="fire">(SPACE)<br/>FIRE</button>
-    <button type="button" data-act="reset">R<br/>RESET</button>
-	<button type="button" data-act="mute" id="muteBtn">M<br/>MUTE</button>
-	<button type="button" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
+    <button type="button" class="c1" data-act="left">&lt;-<br/>ANGLE−</button>
+	<button type="button" class="c1" data-act="angle">A<br/>ANGLE</button>
+    <button type="button" class="c1" data-act="right">-&gt;<br/>ANGLE+</button>
+    <button type="button" class="c0" data-act="power-up">↑<br/>POWER+</button>
+	<button type="button" class="c0" data-act="power">P<br/>POWER</button>
+    <button type="button" class="c0" data-act="power-down">↓<br/>POWER−</button>
+    <button type="button" class="c1" data-act="fire">(SPACE)<br/>FIRE</button>
+    <button type="button" class="c0" data-act="reset">R<br/>RESET</button>
+	<button type="button" class="c1" data-act="p2human" id="p2humanBtn">H<br/>P2 HUMAN</button>
+	<button type="button" class="c0" data-act="mute" id="muteBtn">M<br/>MUTE</button>
+	<button type="button" class="c1" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
+	<button type="button" class="c0" data-act="crt" id="crt">C<br/>CRT MODE</button>
   </div>
 </div>
 
@@ -208,11 +220,12 @@ function genTerrainDune() {
   const baseHeight = 80 + Math.random() * 30; // altezza media del terreno
   const amplitude = 10 + Math.random() * 30;   // intensità delle ondulazioni
   const slopeFactor = (Math.random() * 0.2) - 0.1; // pendenza verso destra o sinistra random
+  const dune = (Math.random() * 10) < 5 ? 30 : 20;
 
   for (let x = 0; x < W; x++) {
     // Collina dolce con pendenza verso destra e leggere ondulazioni
     const slope = x * slopeFactor;
-    const wave = Math.sin(x / 30) * amplitude;
+    const wave = Math.sin(x / dune) * amplitude;
     const height = baseHeight - slope + wave;
 
     terrain[x] = Math.max(6, Math.min(H - 40, Math.round(height)));
@@ -449,6 +462,7 @@ function update() {
     if (keys[' '] ) { launch(p); keys[' '] = false; }
   }
 
+  // aggiorna proiettile
   if (projectile) {
     projectile.vx += projectile.ax;
     projectile.vy += projectile.ay;
@@ -459,6 +473,7 @@ function update() {
       const groundY = H - terrain[xidx];
       if (projectile.y >= groundY) {
         explode(projectile.x, projectile.y, 10);
+		projectile = null;
       }
     }
     if (projectile && (projectile.x < -50 || projectile.x > W+50 || projectile.y > H+50)) {
@@ -491,10 +506,13 @@ function sleepSync(ms) {
 
 // ------------------------------------------------
 // DRAW
+let terrainChanged = true;
 function draw() {
   //clear
   ctx.fillStyle = COLORS.black;
   ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = COLORS.white;
+  ctx.strokeRect(0,0,W,H);
 
   //terrain
   drawTerrain();
@@ -505,13 +523,21 @@ function draw() {
   //flag
   drawWindFlag();
 
-  //projectile
+  //disegna projectile
   if (projectile) {
-    ctx.fillStyle = COLORS.white;
+    //scia
+    ctx.strokeStyle = projectile.owner.color;
+    ctx.beginPath();
+    ctx.moveTo(projectile.x, projectile.y);
+	//+ avanti tipo missile con razzo dietro, - con punta bianca e scia colorata (mahhh)
+    ctx.lineTo(projectile.x + projectile.vx * 2, projectile.y + projectile.vy * 2);
+	ctx.stroke();
+	//punta
+	ctx.fillStyle = COLORS.white;
     ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
   }
-
-  // disegna esplosioni radiali
+  
+  //disegna esplosioni radiali
   for (const e of explosions) {
     const alpha = Math.max(0, e.life / 30);
     ctx.strokeStyle = e.color;
@@ -815,6 +841,21 @@ function changeMute() {
 	else btn.classList.remove('on');
 }
 
+function changePlayer2Human() {
+	players[1].isAI = !(players[1].isAI);
+	const btn = document.getElementById('p2humanBtn');
+	
+	if(players[1].isAI) btn.classList.remove('on');
+	else btn.classList.add('on');
+}
+
+let currentCrt = 0;
+function changeCrt() {
+	currentCrt = (currentCrt+1) % 3;
+	if(currentCrt == 0) document.body.style.filter = "";
+	else if(currentCrt == 1) document.body.style.filter = "grayscale(1)";
+	else document.body.style.filter = "hue-rotate(280deg)";
+}
 
 // ------------------------------------------------
 // INPUT
@@ -827,8 +868,13 @@ window.addEventListener('keydown', e => {
   if (key === 'r' || key === 'R') reset();
   if (key === 's' || key === 'S') changeScanLines();
   if (key === 'm' || key === 'M') changeMute();
+  if (key === 'h' || key === 'H') changePlayer2Human();
+  if (key === 'a' || key === 'A') enterAngle();
+  if (key === 'p' || key === 'P') enterPower();
+  if (key === 'c' || key === 'C') changeCrt();
 
-  // Modalità inserimento
+  /*
+  // Modalità inserimento (TROPPO POCO INTUITIVA)
   if (key === 'a' || key === 'A') {
     inputMode = "angle";
     inputBuffer = "";
@@ -844,10 +890,24 @@ window.addEventListener('keydown', e => {
     if (inputMode === "power") p.power = Math.max(5, Math.min(100, value)) | 0;
     inputMode = null;
     inputBuffer = "";
-  }
-
+  }*/
+  
   keys[key] = true;
 });
+
+function enterAngle() {
+    let aa = prompt('ENTER ANGLE (0-180)');
+	const value = parseInt(aa);
+    const p = players[currentPlayer];
+    p.angle = Math.max(0, Math.min(180, value)) | 0;
+}
+
+function enterPower() {
+	let pp = prompt('ENTER POWER (0-100)');
+	const value = parseInt(pp);
+    const p = players[currentPlayer];
+    p.power = Math.max(5, Math.min(100, value)) | 0;
+}
 
 window.addEventListener('keyup', e=>{ keys[e.key] = false });
 
@@ -875,6 +935,10 @@ document.getElementById('touch-controls').addEventListener('click', e => {
     case 'reset': reset(); break;
 	case 'mute': changeMute(); break;
 	case 'scanlines': changeScanLines(); break;
+	case 'p2human': changePlayer2Human(); break;
+	case 'power': enterPower(); break;
+	case 'angle': enterAngle(); break;
+	case 'crt': changeCrt(); break;
   }
   btn.blur();
 });
