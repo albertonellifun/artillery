@@ -124,12 +124,9 @@ const H = canvas.height;
 // Mantiene il rapporto originale 16:10 (320x200)
 function resizeCanvas() {
   const aspect = W / H;
-  //const maxW = window.innerWidth - 50;
-  //const maxH = window.innerHeight - 100;
   const maxW = document.documentElement.clientWidth - 20;
-  const maxH = document.documentElement.clientHeight - 20;
-  console.log('maxw='+maxW+' maxh='+maxH);
-
+  const maxH = document.documentElement.clientHeight - 140;
+  
   let newW = maxW;
   let newH = newW / aspect;
   if (newH > maxH) {
@@ -139,7 +136,6 @@ function resizeCanvas() {
   
   canvas.style.width = `${newW}px`;
   canvas.style.height = `${newH}px`;
-  console.log('w='+newW+' h='+newH+' r='+newW/newH);
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
