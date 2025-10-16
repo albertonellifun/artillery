@@ -1029,6 +1029,12 @@ canvas.addEventListener('click', ()=> {
   if (!players[currentPlayer].isAI) launch(players[currentPlayer]);
 });
 
+//doppio click = fullscreen
+document.body.addEventListener('dblclick', () => {
+	if(document.fullscreenElement) document.exitFullscreen();
+	else document.documentElement.requestFullscreen();
+});
+
 //gestione touch controls
 document.getElementById('touch-controls').addEventListener('click', e => {
   //alcuni devono funzionare sempre
