@@ -2,6 +2,8 @@
 Artillery - Apple ][ clone written in HTML + CSS + Javascript 
 [link](https://albertonellifun.github.io/artillery/artillery.html)
 
+![gameplay](/screenshot.jpg)
+
 
 ## Licenza
 
