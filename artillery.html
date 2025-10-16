@@ -226,6 +226,7 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); // As
 
 
 let isMute = false;//perche' il silenzio e' d'oro
+let scanLinesEnabled = false;//a noi piacciono i monitor vintage
 let currentCrt = 0;//effetti speciali (arancione, bianco e nero, verde, etc...)
 let isHantarex = false;//mostra o nasconde il mitico hantarex 12 pollici a fosfori verdi che ti ammazza le diottrie
 let isBW = false;//apple2 aveva tutto bianco, terreno verde
@@ -415,7 +416,6 @@ function launch(player) {
 // ------------------------------------------------
 // EXPLOSION
 function explode(x, y, radius) {
-    
   playExplosionSound(); 
 
   // crea un piccolo cratere
@@ -425,8 +425,11 @@ function explode(x, y, radius) {
     if (sx < 0 || sx >= W) continue;
     const dist = Math.abs(dx);
     if (dist <= radius) {
-      const drop = Math.round((radius - dist) * (0.8 + Math.random()*0.4));
-      terrain[sx] = Math.max(0, terrain[sx] - drop);
+      //const drop = Math.round((radius - dist) * (0.8 + Math.random()*0.4));//buco a V
+      const factor = 1 - ((dist/radius)*(dist/radius));//buco a parabola
+      const drop = Math.round(radius * factor * (0.8 + Math.random()*0.4));
+	  
+	  terrain[sx] = Math.max(0, terrain[sx] - drop);
     }
   }
   
@@ -858,7 +861,6 @@ function playBeep() {
 
 
 //gestione scanlines on/off
-let scanLinesEnabled = false;
 function changeScanLines() {
 	scanLinesEnabled = !scanLinesEnabled;
 	const btn = document.getElementById('scanlinesBtn');
@@ -874,6 +876,7 @@ function changeScanLines() {
 
 
 // ------------------------------------------------
+// QUESTO E' IL GIOCO!
 function loop() {
   update();
   draw();
@@ -893,6 +896,7 @@ function changeMute() {
 	else btn.classList.remove('on');
 }
 
+//gestione P2 umano
 function changePlayer2Human() {
 	players[1].isAI = !(players[1].isAI);
 	const btn = document.getElementById('p2humanBtn');
@@ -956,6 +960,7 @@ function changeBW() {
 	}
 }
 
+
 // ------------------------------------------------
 // INPUT
 window.addEventListener('keydown', e => {
@@ -1000,6 +1005,7 @@ window.addEventListener('keydown', e => {
   keys[key] = true;
 });
 
+//popup orrenda angolo
 function enterAngle() {
     let aa = prompt('ENTER ANGLE (0-180)');
 	const value = parseInt(aa);
@@ -1007,6 +1013,7 @@ function enterAngle() {
     p.angle = Math.max(0, Math.min(180, value)) | 0;
 }
 
+//popup orrenda potenza
 function enterPower() {
 	let pp = prompt('ENTER POWER (0-100)');
 	const value = parseInt(pp);
@@ -1016,13 +1023,13 @@ function enterPower() {
 
 window.addEventListener('keyup', e=>{ keys[e.key] = false });
 
-//click
+//click = spara!
 canvas.addEventListener('click', ()=> {
   if (gameover) return;
   if (!players[currentPlayer].isAI) launch(players[currentPlayer]);
 });
 
-//touch
+//gestione touch controls
 document.getElementById('touch-controls').addEventListener('click', e => {
   //alcuni devono funzionare sempre
   const btn = e.target.closest('button');
