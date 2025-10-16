@@ -20,8 +20,31 @@
 	text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
   }
 
+  #monitor.hantarex {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: url(hantarex.jpg) no-repeat center center;
+    background-size: 100% 100%;
+  }
+
+  #container.hantarex {
+    zoom: 0.5;
+    position: relative;
+    top: 19%;
+    left: 12.5%;
+    width: 75%;
+    height: 53%;
+    overflow: hidden;
+    padding: 1%;
+  }
+  @media (orientation: landscape) {
+	#container.hantarex {
+		zoom: 0.75;
+	}
+  }
+  
+
   #container {
-    background: #333;
     padding: 8px;
     box-sizing: border-box;
 	justify-content: space-evenly;
@@ -30,6 +53,7 @@
     align-items: center;
 	width: 100vw;
 	height: 100vh;
+	box-shadow: 0 0 10px rgba(0, 100, 0, 1) inset;
   }
 
   canvas {
@@ -86,6 +110,13 @@
     min-width: 80px;
 	overflow: hidden;
 	text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
+	white-space: nowrap;
+  }
+  #touch-controls p {
+    flex: 1 1 80px;
+    min-width: 80px;
+	overflow: hidden;
+	text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
   }
   #touch-controls button:active {
     background: #0f0;
@@ -105,26 +136,31 @@
 </style>
 </head>
 <body>
-<div id="scanlines-overlay"></div>
-<div id="container">
-  <div class="note">Artillery - Apple ][ clone</div>
-  <canvas id="game" width="320" height="200"></canvas>
+<div id="monitor">
+	<div id="container">
+		<div id="scanlines-overlay"></div>
   
-  <div id="touch-controls">
-    CONTROLS:
-    <button type="button" class="c1" data-act="left">&lt;-<br/>ANGLE−</button>
-	<button type="button" class="c1" data-act="angle">A<br/>ANGLE</button>
-    <button type="button" class="c1" data-act="right">-&gt;<br/>ANGLE+</button>
-    <button type="button" class="c0" data-act="power-up">↑<br/>POWER+</button>
-	<button type="button" class="c0" data-act="power">P<br/>POWER</button>
-    <button type="button" class="c0" data-act="power-down">↓<br/>POWER−</button>
-    <button type="button" class="c1" data-act="fire">(SPACE)<br/>FIRE</button>
-    <button type="button" class="c0" data-act="reset">R<br/>RESET</button>
-	<button type="button" class="c1" data-act="p2human" id="p2humanBtn">H<br/>P2 HUMAN</button>
-	<button type="button" class="c0" data-act="mute" id="muteBtn">M<br/>MUTE</button>
-	<button type="button" class="c1" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
-	<button type="button" class="c0" data-act="crt" id="crt">C<br/>CRT MODE</button>
-  </div>
+		<div class="note">Artillery - Apple ][ clone</div>
+		<canvas id="game" width="320" height="200"></canvas>
+  
+		<div id="touch-controls">
+			<p>CONTROLS:</p>
+			<button type="button" class="c1" data-act="left">&lt;-<br/>ANGLE−</button>
+			<button type="button" class="c1" data-act="angle">A<br/>ANGLE</button>
+			<button type="button" class="c1" data-act="right">-&gt;<br/>ANGLE+</button>
+			<button type="button" class="c0" data-act="power-up">↑<br/>POWER+</button>
+			<button type="button" class="c0" data-act="power">P<br/>POWER</button>
+			<button type="button" class="c0" data-act="power-down">↓<br/>POWER−</button>
+			<button type="button" class="c1" data-act="fire">(SPACE)<br/>FIRE</button>
+			<button type="button" class="c0" data-act="reset">R<br/>RESET</button>
+			<button type="button" class="c1" data-act="p2human" id="p2humanBtn">H<br/>P2 HUMAN</button>
+			<button type="button" class="c0" data-act="mute" id="muteBtn">M<br/>MUTE</button>
+			<button type="button" class="c1" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
+			<button type="button" class="c0" data-act="bw" id="bwBtn">B<br/>B/W MODE</button>
+			<button type="button" class="c1" data-act="crt" id="crtBtn">C<br/>CRT MODE</button>
+			<button type="button" class="c0" data-act="hantarex" id="hantarexBtn">X<br/>HANTAREX MODE</button>
+		</div>
+	</div>
 </div>
 
 <script type="text/javascript">
@@ -156,14 +192,13 @@ resizeCanvas();
 
 // Palette Apple II–style
 const COLORS = {
-  black: '#000',
-  green: '#0A0',
-  darkGreen: '#080',
-  cyan: '#8CF',
-  white: '#FFF',
-  purple: '#C8F',
-  yellow: '#FF8',
-  orange: '#F80'
+  white: '#FFF', black: '#000',
+  gray: '#666', darkGray: '#444',
+  green: '#0A0', darkGreen: '#080',
+  cyan: '#8CF', darkCyan: '#6AD',
+  purple: '#C8F', darkPurple: '#A6D',
+  yellow: '#FF8', darkYellow: '#DD6',
+  orange: '#F80', darkOrange: '#D60'  
 };
 
 
@@ -190,10 +225,29 @@ let inputBuffer = "";
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); // Assicurati che sia definito una sola volta
 
 
+let isMute = false;//perche' il silenzio e' d'oro
+let currentCrt = 0;//effetti speciali (arancione, bianco e nero, verde, etc...)
+let isHantarex = false;//mostra o nasconde il mitico hantarex 12 pollici a fosfori verdi che ti ammazza le diottrie
+let isBW = false;//apple2 aveva tutto bianco, terreno verde
+
 
 // ------------------------------------------------
 // TERRAIN GENERATION
+let terrainColors = [ COLORS.green, COLORS.darkGreen, 
+	COLORS.orange, COLORS.darkOrange, 
+	COLORS.gray, COLORS.darkGray,
+	COLORS.yellow, COLORS.darkYellow, 
+	COLORS.cyan, COLORS.darkCyan, 
+	COLORS.purple, COLORS.darkPurple];
+let currentTerrainColor = -2;
+let currentTerrainColorDark = -1;
+
 function genTerrain() { 
+	//random color
+	currentTerrainColor = (currentTerrainColor + 2) % terrainColors.length;
+	currentTerrainColorDark = currentTerrainColor + 1;
+
+	//random shape
 	const terrainGenerators = [ genTerrainPicco, genTerrainGradino, genTerrainDune  ];
 	const randomIndex = (Math.random() * terrainGenerators.length) | 0;
 	terrainGenerators[randomIndex]();
@@ -292,6 +346,7 @@ function genTerrainPicco() {
   }
 }
 
+//scalino al centro
 function genTerrainGradino() {
   const baseHeightLeft = 40 + Math.random() * 20;
   const baseHeightRight = 120 + (Math.random() * 30 - 15);
@@ -379,10 +434,10 @@ function explode(x, y, radius) {
   for (let p of players) {
     const px = p.x;
 	const py = H - terrain[p.x];
-    const dist = Math.hypot(x - px, y - py);
+    const dist = Math.hypot(x - px, y - py);//ipotenusa == radice (a^2 + b^2)
     
     // Controlliamo TUTTI i giocatori
-    if (dist < radius + 5) {
+    if (dist < radius + 4) {
         
         // Se un giocatore è stato colpito
         playTankExplosionSound(); 
@@ -410,7 +465,7 @@ function explode(x, y, radius) {
 //gestione esplosione cannone
 let explosions = []; // elenco esplosioni colorate attive
 function spawnCannonExplosion(px, py) {
-  const colors = [COLORS.white, COLORS.yellow, COLORS.purple, COLORS.cyan];
+  const colors = isBW ? [COLORS.white, COLORS.green, COLORS.darkGreen] : [COLORS.white, COLORS.yellow, COLORS.purple, COLORS.cyan];
   for (let i = 0; i < 10; i++) {
     const angle = Math.PI + (Math.PI / 10) * i;
     const speed = Math.random() * 1;
@@ -506,7 +561,6 @@ function sleepSync(ms) {
 
 // ------------------------------------------------
 // DRAW
-let terrainChanged = true;
 function draw() {
   //clear
   ctx.fillStyle = COLORS.black;
@@ -526,7 +580,7 @@ function draw() {
   //disegna projectile
   if (projectile) {
     //scia
-    ctx.strokeStyle = projectile.owner.color;
+    ctx.strokeStyle = isBW ? COLORS.green : projectile.owner.color;
     ctx.beginPath();
     ctx.moveTo(projectile.x, projectile.y);
 	//+ avanti tipo missile con razzo dietro, - con punta bianca e scia colorata (mahhh)
@@ -557,8 +611,12 @@ function draw() {
 function drawTerrain() {
   for (let x=0;x<W;x++){
     const h = terrain[x];
-    ctx.fillStyle = (x % 2 === 0) ? COLORS.green : COLORS.darkGreen;
+	if(isBW) ctx.fillStyle = (x % 2 === 0) ? COLORS.green : COLORS.darkGreen;
+	else ctx.fillStyle = (x % 2 === 0) ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
     ctx.fillRect(x, H - h, 1, h);
+	//bordo scuro o neve?
+	//ctx.fillStyle = terrainColors[currentTerrainColorDark];
+	//ctx.fillRect(x, H - h, 1, 1);
   }
 }
 
@@ -566,12 +624,8 @@ function drawTerrain() {
 function drawGun(p) {
   const y = (H - terrain[p.x]) - 2;
   
-  // CORPO del cannone
-  //ctx.fillStyle = p.color;
-  //ctx.fillRect(p.x - 3, y, 6, 3);
-  
   // CORPO del cannone: trapezio rovesciato
-  ctx.fillStyle = p.color;
+  ctx.fillStyle = isBW ? COLORS.white : p.color;
   ctx.beginPath();
   ctx.moveTo(p.x - 5, y);     // punto in alto a sinistra
   ctx.lineTo(p.x + 5, y);     // punto in alto a destra
@@ -580,7 +634,6 @@ function drawGun(p) {
   ctx.closePath();
   ctx.fill();
   
-
   // CANNA del cannone
   const a = p.angle * Math.PI / 180;
   const len = 6;
@@ -590,7 +643,7 @@ function drawGun(p) {
   ctx.beginPath();
   ctx.moveTo(p.x, y);
   ctx.lineTo(bx, by);
-  ctx.strokeStyle = p.color;
+  ctx.strokeStyle = isBW ? COLORS.white : p.color;
   ctx.stroke();
 }
 
@@ -608,7 +661,7 @@ function drawWindFlag() {
   ctx.stroke();
 
   //disegna bandiera
-  ctx.fillStyle = COLORS.yellow;
+  ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
   let windIntensity = Math.abs(wind) | 0;
   const rectWidth = windIntensity;
   const rectHeight = 4;
@@ -629,7 +682,7 @@ function drawHUD() {
   ctx.font = "10px monospace";
   ctx.textBaseline = "alphabetic";
   //player
-  ctx.fillStyle = p.color;  
+  ctx.fillStyle = isBW ? COLORS.white : p.color;  
   ctx.fillText(`${p.name}`, 6, H - 12);
   //potenza/angolo
   ctx.fillStyle = COLORS.white;
@@ -830,9 +883,8 @@ function loop() {
 loop();
 
 
-//gestione mute sound on/off
-let isMute = false;
-	
+
+//gestione mute sound on/off	
 function changeMute() {
 	isMute = !isMute;
 	const btn = document.getElementById('muteBtn');
@@ -849,29 +901,82 @@ function changePlayer2Human() {
 	else btn.classList.add('on');
 }
 
-let currentCrt = 0;
+
+//gestione crt
 function changeCrt() {
 	currentCrt = (currentCrt+1) % 3;
-	if(currentCrt == 0) document.body.style.filter = "";
-	else if(currentCrt == 1) document.body.style.filter = "grayscale(1)";
-	else document.body.style.filter = "hue-rotate(280deg)";
+	const btn = document.getElementById('crtBtn');
+	const container = document.getElementById('container');
+	
+	if(currentCrt == 0) {
+		btn.classList.remove('on');
+		container.style.filter = "";
+	}
+	else if(currentCrt == 1) {
+		btn.classList.add('on');
+		container.style.filter = "grayscale(1)";
+	}
+	else {
+		btn.classList.add('on');
+		container.style.filter = "hue-rotate(280deg)";
+	}
+}
+
+
+//gestione hantarex
+function changeHantarex() {
+	isHantarex = !isHantarex;
+	const btn = document.getElementById('hantarexBtn');
+	const monitor = document.getElementById('monitor');
+	const container = document.getElementById('container');
+	
+	if (isHantarex) {
+		btn.classList.add('on');
+		monitor.classList.add('hantarex');
+		container.classList.add('hantarex');
+	}
+	else {
+		btn.classList.remove('on');
+		monitor.classList.remove('hantarex');
+		container.classList.remove('hantarex');
+	}
+}
+
+
+//gestione bw
+function changeBW() {
+	isBW = !isBW;
+	const btn = document.getElementById('bwBtn');
+	
+	if (isBW) {
+		btn.classList.add('on');
+	}
+	else {
+		btn.classList.remove('on');
+	}
 }
 
 // ------------------------------------------------
 // INPUT
 window.addEventListener('keydown', e => {
-  if (players[currentPlayer].isAI) return;
-  if (gameover) return;
-  
   const key = e.key;
+  //alcuni devono funzionare sempre
   if (key === ' ') e.preventDefault();
-  if (key === 'r' || key === 'R') reset();
   if (key === 's' || key === 'S') changeScanLines();
   if (key === 'm' || key === 'M') changeMute();
+  if (key === 'c' || key === 'C') changeCrt();
+  if (key === 'x' || key === 'X') changeHantarex();
+  if (key === 'b' || key === 'B') changeBW();
+  
+  //altri devono funzionare solo quando tocca all'umano
+  if (players[currentPlayer].isAI) return;
+  if (gameover) return;
+
+  if (key === 'r' || key === 'R') reset();
   if (key === 'h' || key === 'H') changePlayer2Human();
   if (key === 'a' || key === 'A') enterAngle();
   if (key === 'p' || key === 'P') enterPower();
-  if (key === 'c' || key === 'C') changeCrt();
+  
 
   /*
   // Modalità inserimento (TROPPO POCO INTUITIVA)
@@ -919,13 +1024,24 @@ canvas.addEventListener('click', ()=> {
 
 //touch
 document.getElementById('touch-controls').addEventListener('click', e => {
-  if (players[currentPlayer].isAI) return;
-  if (gameover) return;
-  
+  //alcuni devono funzionare sempre
   const btn = e.target.closest('button');
   if (!btn) return;
   const act = btn.dataset.act;
   const p = players[currentPlayer];
+
+  switch (act) {
+  	case 'mute': changeMute(); break;
+	case 'scanlines': changeScanLines(); break;
+    case 'crt': changeCrt(); break;
+	case 'hantarex': changeHantarex(); break;
+	case 'bw': changeBW(); break;
+  }
+  
+  //altri devono funzionare solo quando tocca all'umano
+  if (players[currentPlayer].isAI) return;
+  if (gameover) return;
+  
   switch (act) {
     case 'left':  p.angle = Math.min(180, p.angle + (currentPlayer ? -1 : 1)); break;
     case 'right': p.angle = Math.max(0, p.angle - (currentPlayer ? -1 : 1)); break;
@@ -933,13 +1049,11 @@ document.getElementById('touch-controls').addEventListener('click', e => {
     case 'power-down': p.power = Math.max(5, p.power - 5); break;
     case 'fire': launch(p); break;
     case 'reset': reset(); break;
-	case 'mute': changeMute(); break;
-	case 'scanlines': changeScanLines(); break;
 	case 'p2human': changePlayer2Human(); break;
 	case 'power': enterPower(); break;
 	case 'angle': enterAngle(); break;
-	case 'crt': changeCrt(); break;
   }
+  
   btn.blur();
 });
 
