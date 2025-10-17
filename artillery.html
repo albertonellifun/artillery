@@ -140,7 +140,7 @@
 	<div id="container">
 		<div id="scanlines-overlay"></div>
   
-		<div class="note">Artillery - Apple ][ clone</div>
+		<div id="title" class="note">Artillery - Apple ][ clone</div>
 		<canvas id="game" width="320" height="200"></canvas>
   
 		<div id="touch-controls">
@@ -159,13 +159,14 @@
 			<button type="button" class="c0" data-act="bw" id="bwBtn">B<br/>B/W MODE</button>
 			<button type="button" class="c1" data-act="crt" id="crtBtn">C<br/>CRT MODE</button>
 			<button type="button" class="c0" data-act="hantarex" id="hantarexBtn">X<br/>HANTAREX MODE</button>
+			<button type="button" class="c1" data-act="distort" id="distortBtn">D<br/>DISTORT MODE</button>
 		</div>
 	</div>
 </div>
 
 <script type="text/javascript">
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d', {alpha: false});
+const ctx = canvas.getContext('2d', {xxxalpha: false});
 const W = canvas.width;
 const H = canvas.height;
 
@@ -230,7 +231,7 @@ let scanLinesEnabled = false;//a noi piacciono i monitor vintage
 let currentCrt = 0;//effetti speciali (arancione, bianco e nero, verde, etc...)
 let isHantarex = false;//mostra o nasconde il mitico hantarex 12 pollici a fosfori verdi che ti ammazza le diottrie
 let isBW = false;//apple2 aveva tutto bianco, terreno verde
-
+let isDistort = false;//prova a renderizzare il canvas in modalita' boccia per pesciolini
 
 // ------------------------------------------------
 // TERRAIN GENERATION
@@ -378,7 +379,7 @@ function randomizeWind() {
 
 
 //reset
-function reset() {
+function reset() {  
   genTerrain();
   randomizeWind();
   projectile = null;
@@ -526,17 +527,18 @@ function update() {
     projectile.vy += projectile.ay;
     projectile.x += projectile.vx;
     projectile.y += projectile.vy;
-    const xidx = Math.floor(projectile.x);
+	
+	const xidx = Math.floor(projectile.x);
     if (xidx >= 0 && xidx < W) {
       const groundY = H - terrain[xidx];
       if (projectile.y >= groundY) {
         explode(projectile.x, projectile.y, 10);
 		projectile = null;
-      }
+	  }
     }
     if (projectile && (projectile.x < -50 || projectile.x > W+50 || projectile.y > H+50)) {
       projectile = null;
-      nextTurn();
+	  nextTurn();
     }
   }
   
@@ -550,10 +552,14 @@ function update() {
   }
 }
 
+
+
+
 //apple2 era un catorcio 6502 ad 1mhz
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
 //catorcio deluxe sincrono
 function sleepSync(ms) {
   const end = Date.now() + ms;
@@ -684,6 +690,7 @@ function drawHUD() {
   
   ctx.font = "10px monospace";
   ctx.textBaseline = "alphabetic";
+  
   //player
   ctx.fillStyle = isBW ? COLORS.white : p.color;  
   ctx.fillText(`${p.name}`, 6, H - 12);
@@ -701,9 +708,23 @@ function drawHUD() {
   //messaggio
   if (message) {
     ctx.fillStyle = COLORS.white;
-    ctx.font = "10px monospace";
     const tw = ctx.measureText(message).width;
     ctx.fillText(message, (W - tw)/2, H - 12);
+  }
+  
+  //titolo dentro con bordi doppi
+  if (isDistort) {
+	ctx.fillStyle = COLORS.white;//gray;
+    const title = "Artillery - Apple ][ clone";
+    const tw = ctx.measureText(title).width;
+    ctx.fillText(title, (W - tw)/2, 14);
+	
+	ctx.strokeStyle = COLORS.white;
+	ctx.lineWidth = 3;
+	ctx.strokeRect(0, 0, W, H);
+	ctx.strokeStyle = COLORS.gray;
+	ctx.lineWidth = 1;
+	ctx.strokeRect(3, 3, W-3, H-3);
   }
 }
 
@@ -880,6 +901,7 @@ function changeScanLines() {
 function loop() {
   update();
   draw();
+  if(isDistort) distort();
   requestAnimationFrame(loop);
 }
 
@@ -929,7 +951,7 @@ function changeCrt() {
 
 //gestione hantarex
 function changeHantarex() {
-	isHantarex = !isHantarex;
+    isHantarex = !isHantarex;
 	const btn = document.getElementById('hantarexBtn');
 	const monitor = document.getElementById('monitor');
 	const container = document.getElementById('container');
@@ -961,6 +983,25 @@ function changeBW() {
 }
 
 
+//gestione distort
+function changeDistort() {
+	isDistort = !isDistort;
+	const btn = document.getElementById('distortBtn');
+	const title = document.getElementById('title');
+	const game = document.getElementById('game');
+	
+	if (isDistort) {
+		btn.classList.add('on');
+		title.style.display = 'none';
+		game.style.border = 'none';
+	}
+	else {
+		btn.classList.remove('on');
+		title.style.display = 'block';
+		game.style.border = '4px solid #fff';
+	}
+}
+
 // ------------------------------------------------
 // INPUT
 window.addEventListener('keydown', e => {
@@ -972,6 +1013,7 @@ window.addEventListener('keydown', e => {
   if (key === 'c' || key === 'C') changeCrt();
   if (key === 'x' || key === 'X') changeHantarex();
   if (key === 'b' || key === 'B') changeBW();
+  if (key === 'd' || key === 'D') changeDistort();
   
   //altri devono funzionare solo quando tocca all'umano
   if (players[currentPlayer].isAI) return;
@@ -1049,6 +1091,7 @@ document.getElementById('touch-controls').addEventListener('click', e => {
     case 'crt': changeCrt(); break;
 	case 'hantarex': changeHantarex(); break;
 	case 'bw': changeBW(); break;
+	case 'distort': changeDistort(); break;
   }
   
   //altri devono funzionare solo quando tocca all'umano
@@ -1069,6 +1112,35 @@ document.getElementById('touch-controls').addEventListener('click', e => {
   
   btn.blur();
 });
+
+
+function distort() {
+    // ora applichiamo distorsione a barilotto
+    const src = ctx.getImageData(0, 0, W, H);
+    const dst = ctx.createImageData(W, H);
+
+    const k = -0.00000125; // intensità curvatura (più grande = più curva)
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const dx = x - W / 2;
+        const dy = y - H / 2;
+        const r2 = dx * dx + dy * dy;
+        const factor = 1 + k * r2; // fattore di curvatura
+        const sx = Math.round(W / 2 + dx / factor);
+        const sy = Math.round(H / 2 + dy / factor);
+        if (sx >= 0 && sx < W && sy >= 0 && sy < H) {
+          const sIdx = (sy * W + sx) * 4;
+          const dIdx = (y * W + x) * 4;
+          dst.data[dIdx] = src.data[sIdx];
+          dst.data[dIdx + 1] = src.data[sIdx + 1];
+          dst.data[dIdx + 2] = src.data[sIdx + 2];
+          dst.data[dIdx + 3] = src.data[sIdx + 3];
+        }
+      }
+    }
+
+    ctx.putImageData(dst, 0, 0);
+}
 
 </script>
 </body>
