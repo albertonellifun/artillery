@@ -82,7 +82,7 @@
     right: 0;
     bottom: 0;
     pointer-events: none;
-    background: repeating-linear-gradient(transparent, transparent 0px, rgba(0, 0, 0, 0.5) 1px, transparent 2px);
+    background: repeating-linear-gradient(to right, transparent, transparent 0px, rgba(0, 0, 0, 0.33) 2px, transparent 4px);
     background-size: 100% 4px;
     opacity: 1;
 	display:none;
@@ -140,7 +140,7 @@
 	<div id="container">
 		<div id="scanlines-overlay"></div>
   
-		<div id="title" class="note">Artillery - Apple ][ clone</div>
+		<div id="title" class="note">Artillery - Apple ][ clone<span class="apple2-cursor"/></div>
 		<!-- apple2=280x192, CGA=320x200, alberto=420x200 -->
 		<canvas id="game" width="420" height="200"></canvas>
   
@@ -446,7 +446,7 @@ function explode(x, y, radius) {
         
         // Se un giocatore è stato colpito
         playTankExplosionSound(); 
-		spawnCannonExplosion(px,py);
+		spawnCannonExplosion(px,py,p.color);
 
         const isSelfHit = p === projectile.owner;
         const targetName = isSelfHit ? "HIMSELF" : p.name;
@@ -469,19 +469,21 @@ function explode(x, y, radius) {
 
 //gestione esplosione cannone
 let explosions = []; // elenco esplosioni colorate attive
-function spawnCannonExplosion(px, py) {
-  const colors = isBW ? [COLORS.white, COLORS.green, COLORS.darkGreen] : [COLORS.white, COLORS.yellow, COLORS.purple, COLORS.cyan];
-  for (let i = 0; i < 10; i++) {
-    const angle = Math.PI + (Math.PI / 10) * i;
+function spawnCannonExplosion(px, py, pcolor) {
+  const colors = isBW ? [COLORS.white, COLORS.green, COLORS.darkGreen] : [COLORS.white, COLORS.yellow, COLORS.orange, pcolor];
+  for (let i = 0; i < 18; i++) {
+    const angle = Math.PI + (Math.PI / 18) * i;
     const speed = Math.random() * 1;
     const vx = Math.cos(angle) * speed;
     const vy = Math.sin(angle) * speed;
     explosions.push({
+	  ox : px,
+	  oy : py,
       x: px,
       y: py,
       vx: vx,
       vy: vy,
-      life: 40 + Math.random() * 40, // frame di durata
+      life: 40 + Math.random() * 40,//frame di durata
       color: colors[i % colors.length]
     });
   }
@@ -603,14 +605,11 @@ function draw() {
   
   //disegna esplosioni radiali
   for (const e of explosions) {
-    const alpha = Math.max(0, e.life / 30);
     ctx.strokeStyle = e.color;
-    ctx.globalAlpha = alpha;
     ctx.beginPath();
-    ctx.moveTo(e.x, e.y);
-    ctx.lineTo(e.x + e.vx * 30, e.y + e.vy * 30);
+	ctx.moveTo(e.ox, e.oy);
+	ctx.lineTo(e.x, e.y);
     ctx.stroke();
-    ctx.globalAlpha = 1.0;
   }
 
   //hud
@@ -621,8 +620,8 @@ function draw() {
 function drawTerrain() {
   for (let x=0;x<W;x++){
     const h = terrain[x];
-	if(isBW) ctx.fillStyle = (x % 2 === 0) ? COLORS.green : COLORS.darkGreen;
-	else ctx.fillStyle = (x % 2 === 0) ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
+	if(isBW) ctx.fillStyle = (x % 2 === 0) ? COLORS.green : scanLinesEnabled ? COLORS.green : COLORS.darkGreen;
+	else ctx.fillStyle = (x % 2 === 0) ? terrainColors[currentTerrainColor] : scanLinesEnabled ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
     ctx.fillRect(x, H - h, 1, h);
 	//bordo scuro o neve?
 	//ctx.fillStyle = terrainColors[currentTerrainColorDark];
@@ -643,16 +642,28 @@ function drawGun(p) {
   ctx.lineTo(p.x - 4, y + 3); // punto in basso a sinistra
   ctx.closePath();
   ctx.fill();
+  if (isBW) {
+	// era nero dentro
+    ctx.strokeStyle = COLORS.black;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 3, y + 1.5);
+    ctx.lineTo(p.x + 3, y + 1.5);
+    ctx.stroke();
+  }	
+
   
-  // CANNA del cannone
+  // CANNA del cannone doppia
   const a = p.angle * Math.PI / 180;
   const len = 6;
   const dir = (p.x < W/2 ? 1 : -1);
   const bx = p.x + Math.cos(a) * len * dir;
   const by = y - Math.sin(a) * len;
   ctx.beginPath();
-  ctx.moveTo(p.x, y);
-  ctx.lineTo(bx, by);
+  ctx.lineWidth = 1;
+  ctx.moveTo(p.x-1, y);
+  ctx.lineTo(bx-1, by);
+  ctx.lineTo(bx+1, by);
+  ctx.lineTo(p.x+1, y);
   ctx.strokeStyle = isBW ? COLORS.white : p.color;
   ctx.stroke();
 }
@@ -671,17 +682,18 @@ function drawWindFlag() {
   ctx.stroke();
 
   //disegna bandiera
-  ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
   let windIntensity = Math.abs(wind) | 0;
   const rectWidth = windIntensity;
-  const rectHeight = 4;
+  const rectHeight = 5;
 
   if (wind >= 0) {
     //bandiera verso destra
-    ctx.fillRect(flagX, flagY - 12, rectWidth, rectHeight);
+	ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+  	ctx.fillRect(flagX, flagY - 12, rectWidth, rectHeight);
   } else {
     //bandiera verso sinistra
-    ctx.fillRect(flagX - rectWidth, flagY - 12, rectWidth, rectHeight);
+   	ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+	ctx.fillRect(flagX - rectWidth, flagY - 12, rectWidth, rectHeight);
   }
 }
 
@@ -691,20 +703,22 @@ function drawHUD() {
   
   ctx.font = "10px monospace";
   ctx.textBaseline = "alphabetic";
-  
-  //player
   ctx.fillStyle = isBW ? COLORS.white : p.color;  
-  ctx.fillText(`${p.name}`, 6, H - 12);
+  
+  //turno corrente
+  ctx.fillStyle = COLORS.white;
+  ctx.fillText("TURN: ", 6, H - 2);
+  ctx.fillStyle = isBW ? COLORS.white : p.color;
+  ctx.fillText(p.name, 39, H - 2);
+  
   //potenza/angolo
   ctx.fillStyle = COLORS.white;
-  ctx.fillText("POWER: " + p.power, 6, H - 2);
-  ctx.fillText("ANGLE: " + p.angle, 66, H - 2);
+  ctx.fillText("POWER: " + p.power, 100, H - 2);
+  ctx.fillText("ANGLE: " + p.angle, 170, H - 2);
+  
   //vento
-  ctx.fillText("WIND: " + (wind > 0 ? '+':'') + wind, W - 58, H - 2);
-
-  // TURNO CORRENTE
-  ctx.fillStyle = COLORS.white;
-  ctx.fillText("TURN: " + p.name, 6, H - 24);
+  ctx.fillText("WIND: " + (wind > 0 ? '+':'') + wind, W - 52, H - 2);
+  
 
   //messaggio
   if (message) {
@@ -1007,44 +1021,30 @@ function changeDistort() {
 // INPUT
 window.addEventListener('keydown', e => {
   const key = e.key;
+  const keyLC = key.toLowerCase();
+  
   //alcuni devono funzionare sempre
-  if (key === ' ') e.preventDefault();
-  if (key === 's' || key === 'S') changeScanLines();
-  if (key === 'm' || key === 'M') changeMute();
-  if (key === 'c' || key === 'C') changeCrt();
-  if (key === 'x' || key === 'X') changeHantarex();
-  if (key === 'b' || key === 'B') changeBW();
-  if (key === 'd' || key === 'D') changeDistort();
+  switch(keyLC) {
+	case ' ' : e.preventDefault(); break;
+	case 's' : changeScanLines(); break;
+	case 'm' : changeMute(); break;
+	case 'c' : changeCrt(); break;
+	case 'x' : changeHantarex(); break;
+	case 'b' : changeBW(); break;
+	case 'd' : changeDistort(); break;
+  }
   
   //altri devono funzionare solo quando tocca all'umano
   if (players[currentPlayer].isAI) return;
   if (gameover) return;
 
-  if (key === 'r' || key === 'R') reset();
-  if (key === 'h' || key === 'H') changePlayer2Human();
-  if (key === 'a' || key === 'A') enterAngle();
-  if (key === 'p' || key === 'P') enterPower();
-  
+  switch(keyLC) {
+    case 'r': reset(); playBeep(); break;
+    case 'h': changePlayer2Human(); break;
+    case 'a': enterAngle(); break;
+    case 'p': enterPower(); break;
+  }
 
-  /*
-  // Modalità inserimento (TROPPO POCO INTUITIVA)
-  if (key === 'a' || key === 'A') {
-    inputMode = "angle";
-    inputBuffer = "";
-  } else if (key === 'p' || key === 'P') {
-    inputMode = "power";
-    inputBuffer = "";
-  } else if (inputMode && /^[0-9]$/.test(key)) {
-    inputBuffer += key;
-  } else if (inputMode && (key === 'Enter' || key === 'Return')) {
-    const value = parseInt(inputBuffer);
-    const p = players[currentPlayer];
-    if (inputMode === "angle") p.angle = Math.max(0, Math.min(180, value)) | 0;
-    if (inputMode === "power") p.power = Math.max(5, Math.min(100, value)) | 0;
-    inputMode = null;
-    inputBuffer = "";
-  }*/
-  
   keys[key] = true;
 });
 
@@ -1105,7 +1105,7 @@ document.getElementById('touch-controls').addEventListener('click', e => {
     case 'power-up':   p.power = Math.min(100, p.power + 5); break;
     case 'power-down': p.power = Math.max(5, p.power - 5); break;
     case 'fire': launch(p); break;
-    case 'reset': reset(); break;
+    case 'reset': reset(); playBeep(); break;
 	case 'p2human': changePlayer2Human(); break;
 	case 'power': enterPower(); break;
 	case 'angle': enterAngle(); break;
@@ -1115,18 +1115,18 @@ document.getElementById('touch-controls').addEventListener('click', e => {
 });
 
 
-function distort() {
-    // ora applichiamo distorsione a barilotto
+// ora applichiamo distorsione a barilotto
+function distort() {    
     const src = ctx.getImageData(0, 0, W, H);
     const dst = ctx.createImageData(W, H);
 
-    const k = -0.00000125; // intensità curvatura (più grande = più curva)
+    const k = -0.00000125; //intensità curvatura (più grande = più curva, a me ne basta un infinitesimo)
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
         const dx = x - W / 2;
         const dy = y - H / 2;
         const r2 = dx * dx + dy * dy;
-        const factor = 1 + k * r2; // fattore di curvatura
+        const factor = 1 + k * r2; //fattore di curvatura
         const sx = Math.round(W / 2 + dx / factor);
         const sy = Math.round(H / 2 + dy / factor);
         if (sx >= 0 && sx < W && sy >= 0 && sy < H) {
@@ -1142,7 +1142,6 @@ function distort() {
 
     ctx.putImageData(dst, 0, 0);
 }
-
 </script>
 </body>
 </html>
