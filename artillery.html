@@ -141,7 +141,8 @@
 		<div id="scanlines-overlay"></div>
   
 		<div id="title" class="note">Artillery - Apple ][ clone</div>
-		<canvas id="game" width="320" height="200"></canvas>
+		<!-- apple2=280x192, CGA=320x200, alberto=420x200 -->
+		<canvas id="game" width="420" height="200"></canvas>
   
 		<div id="touch-controls">
 			<p>CONTROLS:</p>
@@ -166,11 +167,11 @@
 
 <script type="text/javascript">
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d', {xxxalpha: false});
+const ctx = canvas.getContext('2d');//alpha false fa caos con la distorsione
 const W = canvas.width;
 const H = canvas.height;
 
-// Mantiene il rapporto originale 16:10 (320x200)
+// Mantiene il rapporto originale (320x200)
 function resizeCanvas() {
   const aspect = W / H;
   const maxW = document.documentElement.clientWidth - 20;
@@ -211,7 +212,7 @@ let frame = 0;
 // players
 const players = [
   { name:"PLAYER 1", color: COLORS.cyan,   x:30,  angle:60, power:50, isAI:false },
-  { name:"PLAYER 2", color: COLORS.purple, x:280, angle:60, power:50, isAI:true }
+  { name:"PLAYER 2", color: COLORS.purple, x:W-40, angle:60, power:50, isAI:true }
 ];
 
 let currentPlayer = 0;
@@ -699,7 +700,7 @@ function drawHUD() {
   ctx.fillText("POWER: " + p.power, 6, H - 2);
   ctx.fillText("ANGLE: " + p.angle, 66, H - 2);
   //vento
-  ctx.fillText("WIND: " + (wind > 0 ? '+':'') + wind, 262, H - 2);
+  ctx.fillText("WIND: " + (wind > 0 ? '+':'') + wind, W - 58, H - 2);
 
   // TURNO CORRENTE
   ctx.fillStyle = COLORS.white;
