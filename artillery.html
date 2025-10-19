@@ -132,7 +132,7 @@
   }
   #touch-controls button.c1 {
 	background-color: #040;
-  } 
+  }
 </style>
 </head>
 <body>
@@ -145,7 +145,7 @@
 		<canvas id="game" width="420" height="200"></canvas>
   
 		<div id="touch-controls">
-			<p>CONTROLS:</p>
+			<p id="controls-label">CONTROLS:</p>
 			<button type="button" class="c1" data-act="left">&lt;-<br/>ANGLE−</button>
 			<button type="button" class="c1" data-act="angle">A<br/>ANGLE</button>
 			<button type="button" class="c1" data-act="right">-&gt;<br/>ANGLE+</button>
@@ -161,6 +161,7 @@
 			<button type="button" class="c1" data-act="crt" id="crtBtn">C<br/>CRT MODE</button>
 			<button type="button" class="c0" data-act="hantarex" id="hantarexBtn">X<br/>HANTAREX MODE</button>
 			<button type="button" class="c1" data-act="distort" id="distortBtn">D<br/>DISTORT MODE</button>
+			<button type="button" class="c0" data-act="bang" id="bangBtn">G<br/>BANG! BANG!</button>
 		</div>
 	</div>
 </div>
@@ -233,6 +234,8 @@ let currentCrt = 0;//effetti speciali (arancione, bianco e nero, verde, etc...)
 let isHantarex = false;//mostra o nasconde il mitico hantarex 12 pollici a fosfori verdi che ti ammazza le diottrie
 let isBW = false;//apple2 aveva tutto bianco, terreno verde
 let isDistort = false;//prova a renderizzare il canvas in modalita' boccia per pesciolini
+let isBang = false;//bang! bang! per windows 3.1 ;)
+
 
 // ------------------------------------------------
 // TERRAIN GENERATION
@@ -575,11 +578,50 @@ function sleepSync(ms) {
 // DRAW
 function draw() {
   //clear
-  ctx.fillStyle = COLORS.black;
+  ctx.fillStyle = isBang ? COLORS.darkCyan : COLORS.black;
   ctx.fillRect(0,0,W,H);
   ctx.strokeStyle = COLORS.white;
   ctx.strokeRect(0,0,W,H);
 
+  //BANG!
+  if(isBang) {
+	let currentTime = new Date();
+	let currentTimeMMSS = currentTime.getMinutes() * 60 + currentTime.getSeconds();//W/2 + minuti + secondi
+	let posx = (W/2 + currentTimeMMSS);
+	
+	let sunx = (posx / 10) % W | 0;
+	let c1x = (40 + (posx / 3)) % W  | 0;
+	let c2x = (70 + (posx / 4)) % W | 0;
+	let c3x = (100 + (posx / 5)) % W | 0;
+    let c4x = (140 + (posx / 4)) % W | 0;
+	let c5x = (160 + (posx / 3)) % W | 0;
+	
+	if(currentTime.getHours() > 19) {
+		//luna
+		drawMoon(sunx, 20, 10);
+		//nuvole
+		drawCloud(c3x, 25, 0.25, 1);
+		drawCloud(c4x, 25, 0.35, 3);
+		drawCloud(c5x, 30, 0.25, 2);
+	} else {
+		//sole
+		let ooo = projectile != null && Math.abs(projectile.x - sunx) < 5 && Math.abs(projectile.y - 20) < 5;
+		drawSun(sunx, 20, 10, ooo);
+		//nuvole
+		drawCloud(c1x, 25, 0.25, 1);
+		drawCloud(c2x, 35, 0.45, 2);
+		drawCloud(c3x, 25, 0.35, 3);
+		drawCloud(c4x, 30, 0.55, 1);
+		drawCloud(c5x, 30, 0.25, 2);
+		//uccelli
+		for(var i=0;i<3;i++) {	
+			drawBird((60 + i*W/3 + c1x) % W, 30 + i*2);
+			drawBird((75 + i*W/3 + c1x) % W, 44 + i*2);
+			drawBird((90 + i*W/3 + c1x) % W, 35 - i*2);
+		}
+	}
+  }
+	  
   //terrain
   drawTerrain();
 
@@ -591,16 +633,25 @@ function draw() {
 
   //disegna projectile
   if (projectile) {
-    //scia
-    ctx.strokeStyle = isBW ? COLORS.green : projectile.owner.color;
-    ctx.beginPath();
-    ctx.moveTo(projectile.x, projectile.y);
-	//+ avanti tipo missile con razzo dietro, - con punta bianca e scia colorata (mahhh)
-    ctx.lineTo(projectile.x + projectile.vx * 2, projectile.y + projectile.vy * 2);
-	ctx.stroke();
-	//punta
-	ctx.fillStyle = COLORS.white;
-    ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
+	if(isBang) {
+		ctx.fillStyle = COLORS.gray;
+		ctx.strokeStyle = COLORS.darkGray;
+		ctx.beginPath();
+		ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.stroke();
+	} else {
+		//scia
+		ctx.strokeStyle = isBW ? COLORS.green : projectile.owner.color;
+		ctx.beginPath();
+		ctx.moveTo(projectile.x, projectile.y);
+		//+ avanti tipo missile con razzo dietro, - con punta bianca e scia colorata (mahhh)
+		ctx.lineTo(projectile.x + projectile.vx * 2, projectile.y + projectile.vy * 2);
+		ctx.stroke();
+		//punta
+		ctx.fillStyle = COLORS.white;
+		ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
+	}
   }
   
   //disegna esplosioni radiali
@@ -620,52 +671,91 @@ function draw() {
 function drawTerrain() {
   for (let x=0;x<W;x++){
     const h = terrain[x];
-	if(isBW) ctx.fillStyle = (x % 2 === 0) ? COLORS.green : scanLinesEnabled ? COLORS.green : COLORS.darkGreen;
-	else ctx.fillStyle = (x % 2 === 0) ? terrainColors[currentTerrainColor] : scanLinesEnabled ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
-    ctx.fillRect(x, H - h, 1, h);
-	//bordo scuro o neve?
-	//ctx.fillStyle = terrainColors[currentTerrainColorDark];
-	//ctx.fillRect(x, H - h, 1, 1);
+	
+	if(isBang) {
+		ctx.fillStyle = COLORS.green;
+	} else if(isBW) {
+		ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? COLORS.green : COLORS.darkGreen;
+	}
+	else {
+		ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
+	}
+	
+	ctx.fillRect(x, H - h, 1, h);
+	
+	if(isBang) {
+		//bordo scuro
+		ctx.fillStyle = COLORS.darkGreen;
+		ctx.fillRect(x, H - h, 1, 1);
+	}
   }
 }
 
 //disegna cannoni
 function drawGun(p) {
   const y = (H - terrain[p.x]) - 2;
-  
-  // CORPO del cannone: trapezio rovesciato
-  ctx.fillStyle = isBW ? COLORS.white : p.color;
-  ctx.beginPath();
-  ctx.moveTo(p.x - 5, y);     // punto in alto a sinistra
-  ctx.lineTo(p.x + 5, y);     // punto in alto a destra
-  ctx.lineTo(p.x + 4, y + 3); // punto in basso a destra
-  ctx.lineTo(p.x - 4, y + 3); // punto in basso a sinistra
-  ctx.closePath();
-  ctx.fill();
-  if (isBW) {
-	// era nero dentro
-    ctx.strokeStyle = COLORS.black;
-    ctx.beginPath();
-    ctx.moveTo(p.x - 3, y + 1.5);
-    ctx.lineTo(p.x + 3, y + 1.5);
-    ctx.stroke();
-  }	
 
-  
-  // CANNA del cannone doppia
-  const a = p.angle * Math.PI / 180;
-  const len = 6;
-  const dir = (p.x < W/2 ? 1 : -1);
-  const bx = p.x + Math.cos(a) * len * dir;
-  const by = y - Math.sin(a) * len;
-  ctx.beginPath();
-  ctx.lineWidth = 1;
-  ctx.moveTo(p.x-1, y);
-  ctx.lineTo(bx-1, by);
-  ctx.lineTo(bx+1, by);
-  ctx.lineTo(p.x+1, y);
-  ctx.strokeStyle = isBW ? COLORS.white : p.color;
-  ctx.stroke();
+  if (isBang) {
+    // CANNA: cilindro inclinato con bordo arrotondato
+    const a = p.angle * Math.PI / 180;
+    const len = 10;
+    const dir = (p.x < W/2 ? 1 : -1);
+    const bx = p.x + Math.cos(a) * len * dir;
+    const by = y - Math.sin(a) * len;
+
+    ctx.beginPath();
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.moveTo(p.x, y);
+    ctx.lineTo(bx, by);
+    ctx.strokeStyle = COLORS.darkGray;
+    ctx.stroke();
+	ctx.lineWidth = 4;
+	ctx.lineCap = "round";
+    ctx.moveTo(p.x, y);
+    ctx.lineTo(bx, by);
+    ctx.strokeStyle = COLORS.gray;
+    ctx.stroke();
+	
+	//BASE: rettangoli uno sopra l'altro
+    ctx.fillStyle = COLORS.black;
+    ctx.fillRect(p.x - 5, y, 10, 2);	
+	ctx.fillRect(p.x - 7, y + 2, 14, 2);	
+	ctx.fillRect(p.x - 8, y + 4, 16, 2);	
+  } else {
+    // CORPO del cannone: trapezio rovesciato
+    ctx.fillStyle = isBW ? COLORS.white : isBang ? COLORS.darkGray : p.color;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 5, y);     // punto in alto a sinistra
+    ctx.lineTo(p.x + 5, y);     // punto in alto a destra
+    ctx.lineTo(p.x + 4, y + 3); // punto in basso a destra
+    ctx.lineTo(p.x - 4, y + 3); // punto in basso a sinistra
+    ctx.closePath();
+    ctx.fill();
+    if (isBW) {
+      // era nero dentro
+      ctx.strokeStyle = COLORS.black;
+      ctx.beginPath();
+      ctx.moveTo(p.x - 3, y + 1.5);
+      ctx.lineTo(p.x + 3, y + 1.5);
+      ctx.stroke();
+    }	
+      
+    // CANNA del cannone doppia
+    const a = p.angle * Math.PI / 180;
+    const len = 6;
+    const dir = (p.x < W/2 ? 1 : -1);
+    const bx = p.x + Math.cos(a) * len * dir;
+    const by = y - Math.sin(a) * len;
+    ctx.beginPath();
+    ctx.lineWidth = 1;
+    ctx.moveTo(p.x-1, y);
+    ctx.lineTo(bx-1, by);
+    ctx.lineTo(bx+1, by);
+    ctx.lineTo(p.x+1, y);
+    ctx.strokeStyle = isBW ? COLORS.white : isBang ? COLORS.darkGray : p.color;
+    ctx.stroke();
+  }
 }
 
 //disegna bandiera
@@ -674,11 +764,12 @@ function drawWindFlag() {
   const flagY = H - terrain[flagX];//altezza del terreno in quel punto
   
   //disegna asta
-  ctx.strokeStyle = COLORS.white;
+  ctx.strokeStyle = isBang ? COLORS.darkGray : COLORS.white;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(flagX, flagY);
-  ctx.lineTo(flagX, flagY - 12);
+  if(isBang) ctx.lineTo(flagX, flagY - 20);
+  else ctx.lineTo(flagX, flagY - 12);
   ctx.stroke();
 
   //disegna bandiera
@@ -686,14 +777,46 @@ function drawWindFlag() {
   const rectWidth = windIntensity;
   const rectHeight = 5;
 
-  if (wind >= 0) {
-    //bandiera verso destra
-	ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-  	ctx.fillRect(flagX, flagY - 12, rectWidth, rectHeight);
+  if(isBang) {
+	  if (wind >= 0) {
+	    //bandiera verso destra, parte alta
+		ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+		ctx.fillRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
+		ctx.strokeStyle = COLORS.darkGray;
+		ctx.strokeRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
+		// bandiera verso destra → punta rientrante verso l’asta
+		ctx.moveTo(flagX + 2, flagY - 12);                          // attacco asta (alto)
+		ctx.lineTo(flagX + 2 + rectWidth, flagY - 12);              // bordo alto
+		ctx.lineTo(flagX + 2 + rectWidth - 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
+		ctx.lineTo(flagX + 2 + rectWidth, flagY - 12 + rectHeight); // bordo basso
+		ctx.lineTo(flagX + 2, flagY - 12 + rectHeight);             // ritorno all’asta
+	  } else {
+	    //bandiera verso sinistra, parte alta
+	    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+		ctx.fillRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
+		ctx.strokeStyle = COLORS.darkGray;
+		ctx.strokeRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
+		// bandiera verso sinistra → punta rientrante verso l’asta
+		ctx.moveTo(flagX - 2, flagY - 12);                          // attacco asta (alto)
+		ctx.lineTo(flagX - 2 - rectWidth, flagY - 12);              // bordo alto
+		ctx.lineTo(flagX - 2 - rectWidth + 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
+		ctx.lineTo(flagX - 2 - rectWidth, flagY - 12 + rectHeight); // bordo basso
+		ctx.lineTo(flagX - 2, flagY - 12 + rectHeight);             // ritorno all’asta
+	  }
+	  ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+	  ctx.closePath();
+	  ctx.fill();
+	  ctx.stroke();
   } else {
-    //bandiera verso sinistra
-   	ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-	ctx.fillRect(flagX - rectWidth, flagY - 12, rectWidth, rectHeight);
+	  if (wind >= 0) {
+		//bandiera verso destra
+		ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+		ctx.fillRect(flagX, flagY - 12, rectWidth, rectHeight);
+	  } else {
+		//bandiera verso sinistra
+		ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+		ctx.fillRect(flagX - rectWidth, flagY - 12, rectWidth, rectHeight);
+	  }
   }
 }
 
@@ -1032,6 +1155,7 @@ window.addEventListener('keydown', e => {
 	case 'x' : changeHantarex(); break;
 	case 'b' : changeBW(); break;
 	case 'd' : changeDistort(); break;
+	case 'g' : changeBang(); break;
   }
   
   //altri devono funzionare solo quando tocca all'umano
@@ -1073,7 +1197,7 @@ canvas.addEventListener('click', ()=> {
 });
 
 //doppio click = fullscreen
-document.body.addEventListener('dblclick', () => {
+document.getElementById('controls-label').addEventListener('dblclick', () => {
 	if(document.fullscreenElement) document.exitFullscreen();
 	else document.documentElement.requestFullscreen();
 });
@@ -1093,6 +1217,7 @@ document.getElementById('touch-controls').addEventListener('click', e => {
 	case 'hantarex': changeHantarex(); break;
 	case 'bw': changeBW(); break;
 	case 'distort': changeDistort(); break;
+	case 'bang': changeBang(); break;
   }
   
   //altri devono funzionare solo quando tocca all'umano
@@ -1141,6 +1266,151 @@ function distort() {
     }
 
     ctx.putImageData(dst, 0, 0);
+}
+
+//bang!
+function changeBang() {
+	isBang = !isBang;
+	const btn = document.getElementById('bangBtn');
+	
+	if (isBang) {
+		btn.classList.add('on');
+	}
+	else {
+		btn.classList.remove('on');
+	}
+}
+function drawCloud(x, y, scale = 0.5, cloudType = 3) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  
+  switch(cloudType) {
+	case 1 : 
+	  ctx.bezierCurveTo(x - 10 * scale, y - 10 * scale, x + 10 * scale, y - 25 * scale, x + 30 * scale, y - 10 * scale);
+	  ctx.bezierCurveTo(x + 45 * scale, y - 25 * scale, x + 70 * scale, y - 15 * scale, x + 60 * scale, y);
+	  ctx.bezierCurveTo(x + 80 * scale, y + 5 * scale, x + 50 * scale, y + 15 * scale, x + 25 * scale, y + 10 * scale);
+	  ctx.bezierCurveTo(x + 10 * scale, y + 15 * scale, x - 5 * scale, y + 10 * scale, x, y);
+	  break;
+	  
+	case 2 :
+	  ctx.bezierCurveTo(x + 10 * scale, y - 20 * scale, x + 40 * scale, y - 25 * scale, x + 50 * scale, y - 10 * scale);
+	  ctx.bezierCurveTo(x + 65 * scale, y - 30 * scale, x + 100 * scale, y - 20 * scale, x + 90 * scale, y);
+	  ctx.bezierCurveTo(x + 110 * scale, y - 5 * scale, x + 120 * scale, y + 10 * scale, x + 100 * scale, y + 15 * scale);
+      ctx.bezierCurveTo(x + 80 * scale, y + 20 * scale, x + 40 * scale, y + 15 * scale, x + 20 * scale, y + 10 * scale);
+      ctx.bezierCurveTo(x + 5 * scale, y + 15 * scale, x - 5 * scale, y + 5 * scale, x, y);
+	  break;
+    
+	case 3 : 
+      ctx.bezierCurveTo(x + 10 * scale, y - 15 * scale, x + 35 * scale, y - 25 * scale, x + 45 * scale, y - 10 * scale);
+	  ctx.bezierCurveTo(x + 55 * scale, y - 30 * scale, x + 85 * scale, y - 20 * scale, x + 75 * scale, y);
+	  ctx.bezierCurveTo(x + 95 * scale, y - 5 * scale, x + 105 * scale, y + 15 * scale, x + 90 * scale, y + 20 * scale);
+	  ctx.bezierCurveTo(x + 70 * scale, y + 25 * scale, x + 40 * scale, y + 20 * scale, x + 20 * scale, y + 15 * scale);
+	  ctx.bezierCurveTo(x + 5 * scale, y + 20 * scale, x - 5 * scale, y + 10 * scale, x, y);
+      break;
+  }
+  
+  ctx.closePath();
+
+  ctx.fillStyle = COLORS.white;
+  ctx.strokeStyle = COLORS.gray;
+  ctx.lineWidth = scale * 2;
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSun(x, y, radius = 10, ooo = false) {
+  //disco giallo
+  ctx.fillStyle = COLORS.yellow;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  //bordo scuro
+  ctx.strokeStyle = COLORS.darkYellow;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.stroke();
+  
+  //raggi
+  ctx.strokeStyle = COLORS.yellow;
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 8; i++) {
+    const angle = (i * 2 * Math.PI) / 8;
+    const x1 = x + Math.cos(angle) * radius;
+    const y1 = y + Math.sin(angle) * radius;
+    const x2 = x + Math.cos(angle) * (radius + 5);
+    const y2 = y + Math.sin(angle) * (radius + 5);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+  
+  drawFace(x, y, radius, ooo);
+}
+
+function drawFace(x, y, radius = 10, ooo = false) {
+  //occhi
+  const eyeOffsetX = radius * 0.4;
+  const eyeOffsetY = radius * 0.3;
+  const eyeRadius = 1.8;
+  ctx.fillStyle = COLORS.darkGray;
+  ctx.beginPath();
+  ctx.arc(x - eyeOffsetX, y - eyeOffsetY, eyeRadius, 0, Math.PI * 2);
+  ctx.arc(x + eyeOffsetX, y - eyeOffsetY, eyeRadius, 0, Math.PI * 2);
+  ctx.fill();
+  //naso
+  ctx.beginPath();
+  ctx.moveTo(x, y - 1);
+  ctx.lineTo(x, y + 1);
+  ctx.strokeStyle = COLORS.darkGray;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  //bocca
+  ctx.beginPath();
+  if(ooo) {
+    ctx.arc(x, y + radius * 0.4, radius * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS.darkGray;
+    ctx.fill();
+  } else {
+    ctx.arc(x, y + radius * 0.1, radius * 0.5, Math.PI * 0.25, Math.PI * 0.75);
+    ctx.stroke();
+  }
+}
+
+function drawMoon(x, y, radius = 10) {
+  //disco chiaro
+  ctx.fillStyle = COLORS.yellow;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  //bordo bianco
+  ctx.strokeStyle = COLORS.white;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  //parte in ombra
+  ctx.fillStyle = COLORS.darkCyan;
+  ctx.beginPath();
+  ctx.arc(x + radius / 3, y - radius / 6, radius * 0.85, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+
+function drawBird(x, y, size = 6) {
+  ctx.strokeStyle = COLORS.darkGray;
+  ctx.beginPath();
+  //ala sinistra
+  ctx.moveTo(x - size, y);
+  ctx.quadraticCurveTo(x - size / 2, y - size / 2, x, y);
+  //ala destra
+  ctx.quadraticCurveTo(x + size / 2, y - size / 2, x + size, y);
+  ctx.stroke();
 }
 </script>
 </body>
