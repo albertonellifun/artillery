@@ -698,19 +698,19 @@ function drawGun(p) {
   if (isBang) {
     // CANNA: cilindro inclinato con bordo arrotondato
     const a = p.angle * Math.PI / 180;
-    const len = 10;
+    const len = 6;
     const dir = (p.x < W/2 ? 1 : -1);
     const bx = p.x + Math.cos(a) * len * dir;
     const by = y - Math.sin(a) * len;
 
     ctx.beginPath();
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 8;
     ctx.lineCap = "round";
     ctx.moveTo(p.x, y);
     ctx.lineTo(bx, by);
     ctx.strokeStyle = COLORS.darkGray;
     ctx.stroke();
-	ctx.lineWidth = 4;
+	ctx.lineWidth = 6;
 	ctx.lineCap = "round";
     ctx.moveTo(p.x, y);
     ctx.lineTo(bx, by);
@@ -720,8 +720,11 @@ function drawGun(p) {
 	//BASE: rettangoli uno sopra l'altro
     ctx.fillStyle = COLORS.black;
     ctx.fillRect(p.x - 5, y, 10, 2);	
-	ctx.fillRect(p.x - 7, y + 2, 14, 2);	
-	ctx.fillRect(p.x - 8, y + 4, 16, 2);	
+	ctx.fillRect(p.x - 6, y + 2, 12, 2);	
+	ctx.fillRect(p.x - 7, y + 4, 14, 2);	
+	//asse di rotazione
+	ctx.fillStyle = COLORS.darkGray;
+	ctx.fillRect(p.x -1,y, 2, 2);
   } else {
     // CORPO del cannone: trapezio rovesciato
     ctx.fillStyle = isBW ? COLORS.white : isBang ? COLORS.darkGray : p.color;
