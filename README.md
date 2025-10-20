@@ -1,6 +1,8 @@
 # artillery
-Artillery - Apple ][ clone written in HTML + CSS + Javascript 
+Artillery - Apple ][ clone written in HTML + CSS + Javascript
 [link](https://albertonellifun.github.io/artillery/artillery.html)
+
+also available in Bang! Bang! classic Windows 3.1 colors ;-)
 
 ![gameplay](https://albertonellifun.github.io/artillery/screenshot.jpg)
 
