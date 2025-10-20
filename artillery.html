@@ -54,6 +54,7 @@
 	width: 100vw;
 	height: 100vh;
 	box-shadow: 0 0 10px rgba(0, 100, 0, 1) inset;
+	overflow: hidden;
   }
 
   canvas {
@@ -93,8 +94,8 @@
     flex-wrap: wrap;
     justify-content: center;
 	align-items: center;
-    gap: 8px;
-    margin-top: 10px;
+    gap: 0 8px;
+    xxxmargin-top: 10px;
 	width: 100%;
 	font-family: monospace;
     font-size: 16px;
@@ -133,6 +134,9 @@
   #touch-controls button.c1 {
 	background-color: #040;
   }
+  .full {
+	flex: 1 1 100%;
+  }
 </style>
 </head>
 <body>
@@ -149,16 +153,22 @@
 			<button type="button" class="c1" data-act="left">&lt;-<br/>ANGLE−</button>
 			<button type="button" class="c1" data-act="angle">A<br/>ANGLE</button>
 			<button type="button" class="c1" data-act="right">-&gt;<br/>ANGLE+</button>
-			<button type="button" class="c0" data-act="power-up">↑<br/>POWER+</button>
-			<button type="button" class="c0" data-act="power">P<br/>POWER</button>
+			
 			<button type="button" class="c0" data-act="power-down">↓<br/>POWER−</button>
+			<button type="button" class="c0" data-act="power">P<br/>POWER</button>
+			<button type="button" class="c0" data-act="power-up">↑<br/>POWER+</button>
+			
 			<button type="button" class="c1" data-act="fire">(SPACE)<br/>FIRE</button>
 			<button type="button" class="c0" data-act="reset">R<br/>RESET</button>
+			
 			<button type="button" class="c1" data-act="p2human" id="p2humanBtn">H<br/>P2 HUMAN</button>
 			<button type="button" class="c0" data-act="mute" id="muteBtn">M<br/>MUTE</button>
+			<div class="full"></div>
+			
 			<button type="button" class="c1" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
 			<button type="button" class="c0" data-act="bw" id="bwBtn">B<br/>B/W MODE</button>
 			<button type="button" class="c1" data-act="crt" id="crtBtn">C<br/>CRT MODE</button>
+			
 			<button type="button" class="c0" data-act="hantarex" id="hantarexBtn">X<br/>HANTAREX MODE</button>
 			<button type="button" class="c1" data-act="distort" id="distortBtn">D<br/>DISTORT MODE</button>
 			<button type="button" class="c0" data-act="bang" id="bangBtn">G<br/>BANG! BANG!</button>
@@ -1077,15 +1087,15 @@ function changeCrt() {
 	
 	if(currentCrt == 0) {
 		btn.classList.remove('on');
-		container.style.filter = "";
+		container.style.filter = '';
 	}
 	else if(currentCrt == 1) {
 		btn.classList.add('on');
-		container.style.filter = "grayscale(1)";
+		container.style.filter = 'grayscale(1)';
 	}
 	else {
 		btn.classList.add('on');
-		container.style.filter = "hue-rotate(280deg)";
+		container.style.filter = 'hue-rotate(280deg)';
 	}
 }
 
@@ -1275,12 +1285,15 @@ function distort() {
 function changeBang() {
 	isBang = !isBang;
 	const btn = document.getElementById('bangBtn');
+	const game = document.getElementById('game');
 	
 	if (isBang) {
 		btn.classList.add('on');
+		game.style.filter = 'contrast(1.3) saturate(1.3)';
 	}
 	else {
 		btn.classList.remove('on');
+		game.style.filter = '';
 	}
 }
 function drawCloud(x, y, scale = 0.5, cloudType = 3) {
