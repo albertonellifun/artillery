@@ -166,8 +166,8 @@
 			<div class="full"></div>
 			
 			<button type="button" class="c1" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
-			<button type="button" class="c0" data-act="bw" id="bwBtn">W<br/>B/W MODE</button>
-			<button type="button" class="c1" data-act="crt" id="crtBtn">C<br/>CRT MODE</button>
+			<button type="button" class="c0 on" data-act="bw" id="bwBtn">W<br/>B/W PLAYERS</button>
+			<button type="button" class="c1" data-act="crt" id="crtBtn">C<br/>CRT SWITCH</button>
 			
 			<button type="button" class="c0" data-act="hantarex" id="hantarexBtn">X<br/>HANTAREX MODE</button>
 			<button type="button" class="c1" data-act="distort" id="distortBtn">D<br/>DISTORT MODE</button>
@@ -226,8 +226,8 @@ let frame = 0;
 
 // players
 const players = [
-  { name:"PLAYER 1", color: COLORS.cyan,   x:25,  angle:60, power:50, isAI:false },
-  { name:"PLAYER 2", color: COLORS.purple, x:W - 45, angle:60, power:50, isAI:true }
+  { name:"PLAYER 1", color: COLORS.cyan,   darkColor: COLORS.darkCyan,   x:25,     angle:60, power:50, isAI:false },
+  { name:"PLAYER 2", color: COLORS.purple, darkColor: COLORS.darkPurple, x:W - 45, angle:60, power:50, isAI:true }
 ];
 
 let currentPlayer = 0;
@@ -246,7 +246,7 @@ let isMute = false;//perche' il silenzio e' d'oro
 let scanLinesEnabled = false;//a noi piacciono i monitor vintage
 let currentCrt = 0;//effetti speciali (arancione, bianco e nero, verde, etc...)
 let isHantarex = false;//mostra o nasconde il mitico hantarex 12 pollici a fosfori verdi che ti ammazza le diottrie
-let isBW = false;//apple2 aveva tutto bianco, terreno verde
+let isBW = true;//apple2 aveva tutto bianco, terreno verde
 let isDistort = false;//prova a renderizzare il canvas in modalita' boccia per pesciolini
 let isBang = false;//bang! bang! per windows 3.1 ;)
 let isGorilla = false;//gorilla.bas su qbasic ;) ;)
@@ -666,41 +666,9 @@ function draw() {
 
   //disegna projectile
   if (projectile) {
-	if(isBang) {
-		ctx.fillStyle = COLORS.gray;
-		ctx.strokeStyle = COLORS.darkGray;
-		ctx.beginPath();
-		ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
-		ctx.fill();
-		ctx.stroke();
-	} else if(isGorilla) {
-	    const angle = Math.atan2(projectile.vy, projectile.vx);
-		ctx.save();
-		ctx.translate(projectile.x, projectile.y);
-		ctx.rotate(angle);
-		const length = 8;      // lunghezza totale
-		const thickness = 0.5;    // distanza tra arco esterno e interno
-		ctx.beginPath();
-		ctx.strokeStyle = COLORS.yellow;
-		ctx.lineWidth = 1;
-		ctx.moveTo(-length/2, -thickness);
-		ctx.quadraticCurveTo(0, -length, length/2, -thickness);
-		ctx.moveTo(-length/2, thickness);
-		ctx.quadraticCurveTo(0, -length/2, length/2, thickness);
-		ctx.stroke();
-		ctx.restore();
-	} else {
-		//scia
-		ctx.strokeStyle = isBW ? COLORS.green : projectile.owner.color;
-		ctx.beginPath();
-		ctx.moveTo(projectile.x, projectile.y);
-		//+ avanti tipo missile con razzo dietro, - con punta bianca e scia colorata (mahhh)
-		ctx.lineTo(projectile.x + projectile.vx * 2, projectile.y + projectile.vy * 2);
-		ctx.stroke();
-		//punta
-		ctx.fillStyle = COLORS.white;
-		ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
-	}
+	if(isBang) drawProjectileBang();//palla
+	else if(isGorilla) drawProjectileBanana();//banana
+	else drawProjectile();//missiletto standard
   }
   
   //disegna esplosioni radiali
@@ -714,6 +682,49 @@ function draw() {
 
   //hud
   drawHUD();
+}
+
+//disegna palla da cannone
+function drawProjectileBang() {
+	ctx.fillStyle = COLORS.gray;
+	ctx.strokeStyle = COLORS.darkGray;
+	ctx.beginPath();
+	ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
+	ctx.fill();
+	ctx.stroke();
+}
+
+//disegna projectile
+function drawProjectile() {
+	//scia
+	ctx.strokeStyle = isBW ? COLORS.green : projectile.owner.color;
+	ctx.beginPath();
+	ctx.moveTo(projectile.x, projectile.y);
+	//+ avanti tipo missile con razzo dietro, - con punta bianca e scia colorata (mahhh)
+	ctx.lineTo(projectile.x + projectile.vx * 2, projectile.y + projectile.vy * 2);
+	ctx.stroke();
+	//punta
+	ctx.fillStyle = COLORS.white;
+	ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
+}
+
+//disegna banana!!!
+function drawProjectileBanana() {
+	const angle = Math.atan2(projectile.vy, projectile.vx);
+	ctx.save();
+	ctx.translate(projectile.x, projectile.y);
+	ctx.rotate(angle);
+	const length = 8;//lunghezza totale
+	const thickness = 0.5;//distanza tra arco esterno e interno
+	ctx.beginPath();
+	ctx.strokeStyle = COLORS.yellow;
+	ctx.lineWidth = 1;
+	ctx.moveTo(-length/2, -thickness);
+	ctx.quadraticCurveTo(0, -length, length/2, -thickness);
+	ctx.moveTo(-length/2, thickness);
+	ctx.quadraticCurveTo(0, -length/2, length/2, thickness);
+	ctx.stroke();
+	ctx.restore();
 }
 
 //disegna terreno
@@ -806,7 +817,7 @@ function drawGun(p) {
 	} else if(isLauncing) {
 		armType = 1;
 	}
-    drawGorilla(p.x, y-18, armType, 0.66);
+    drawGorilla(p, y-18, armType, 0.66);
   } else {
     //carro armato apple2
     drawCannoneLegacy(p, y);
@@ -816,7 +827,7 @@ function drawGun(p) {
 //carro armato brutto
 function drawCannoneLegacy(p, y) {
 	// CORPO del cannone: trapezio rovesciato
-    ctx.fillStyle = isBW ? COLORS.white : isBang ? COLORS.darkGray : p.color;
+    ctx.fillStyle = isBW ? COLORS.white : p.color;
     ctx.beginPath();
     ctx.moveTo(p.x - 5, y);     // punto in alto a sinistra
     ctx.lineTo(p.x + 5, y);     // punto in alto a destra
@@ -845,7 +856,7 @@ function drawCannoneLegacy(p, y) {
     ctx.lineTo(bx-1, by);
     ctx.lineTo(bx+1, by);
     ctx.lineTo(p.x+1, y);
-    ctx.strokeStyle = isBW ? COLORS.white : isBang ? COLORS.darkGray : p.color;
+    ctx.strokeStyle = isBW ? COLORS.white : p.color;
     ctx.stroke();
 }
 
@@ -869,7 +880,7 @@ function drawCannoneBang(p, y) {
 	ctx.lineCap = "round";
     ctx.moveTo(p.x, y);
     ctx.lineTo(bx, by);
-    ctx.strokeStyle = COLORS.gray;
+    ctx.strokeStyle = isBW ? COLORS.gray : p.color;
     ctx.stroke();
 	
 	//BASE: rettangoli uno sopra l'altro
@@ -885,21 +896,21 @@ function drawCannoneBang(p, y) {
 }
 
 //gorilla!
-function drawGorilla(x, y, arms = 3, scale = 0.5) {
-    const S = (v) => v * scale; // scala
+function drawGorilla(p, y, arms = 3, scale = 0.5) {
+    const S = (v) => v * scale;//scala
+	const x = p.x;
 
     ctx.save();
     ctx.translate(x, y);
-    ctx.fillStyle = COLORS.orange;
-    ctx.strokeStyle = COLORS.darkOrange;
+    ctx.fillStyle = isBW ? COLORS.orange : p.color;
+    ctx.strokeStyle = isBW ? COLORS.darkOrange : p.darkColor;
     ctx.lineWidth = 1;
 
     // --- HEAD ---
-    ctx.fillRect(S(-4), S(0), S(6.9), S(6)); // fronte + occhi
+	ctx.fillRect(S(-4), S(0), S(6.9), S(6)); // fronte + occhi
     ctx.fillRect(S(-5), S(2), S(9), S(2));   // mento
 
-    // Brow line
-    ctx.strokeStyle = COLORS.darkOrange;
+	// Brow line
     ctx.beginPath();
     ctx.moveTo(S(-3), S(2));
     ctx.lineTo(S(2), S(2));
@@ -916,12 +927,10 @@ function drawGorilla(x, y, arms = 3, scale = 0.5) {
     ctx.stroke();
 
     // --- BODY ---
-    ctx.fillStyle = COLORS.orange;
     ctx.fillRect(S(-8), S(8), S(14.9), S(6));   // upper torso
     ctx.fillRect(S(-6), S(15), S(10.9), S(5));  // lower torso
 
     // --- CHEST SHADING ---
-    ctx.strokeStyle = COLORS.darkOrange;
     ctx.beginPath();
     ctx.arc(S(-4.9), S(10), S(4.9), 1.5 * Math.PI, 0);
     ctx.stroke();
@@ -1339,7 +1348,7 @@ function changePlayer2Human() {
 
 //gestione crt
 function changeCrt() {
-	currentCrt = (currentCrt+1) % 3;
+	currentCrt = (currentCrt+1) % 4;
 	const btn = document.getElementById('crtBtn');
 	const container = document.getElementById('container');
 	
@@ -1348,12 +1357,19 @@ function changeCrt() {
 		container.style.filter = '';
 	}
 	else if(currentCrt == 1) {
-		btn.classList.add('on');
-		container.style.filter = 'grayscale(1)';
-	}
-	else {
+		//fosfori arancioni
 		btn.classList.add('on');
 		container.style.filter = 'hue-rotate(280deg)';
+	}
+	else if(currentCrt == 2) {
+		//fosfori blu
+		btn.classList.add('on');
+		container.style.filter = 'hue-rotate(80deg)';
+	}
+	else {
+		//bianco e nero :(
+		btn.classList.add('on');
+		container.style.filter = 'grayscale(1)';
 	}
 }
 
