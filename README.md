@@ -2,7 +2,7 @@
 Artillery - Apple ][ clone written in HTML + CSS + Javascript
 [link](https://albertonellifun.github.io/artillery/artillery.html)
 
-also available in Bang! Bang! classic Windows 3.1 colors or QBasic Gorilla.bas mode ;-)
+also available as the classic Bang! Bang! for Windows 3.1 and (... drumroll...) in QBasic Gorilla.bas mode for MS-DOS ;-)
 
 ![gameplay](https://albertonellifun.github.io/artillery/screenshot.jpg)
 
