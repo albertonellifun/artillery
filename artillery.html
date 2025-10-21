@@ -94,9 +94,8 @@
     flex-wrap: wrap;
     justify-content: center;
 	align-items: center;
-    gap: 0 8px;
-    xxxmargin-top: 10px;
-	width: 100%;
+    gap: 2px 8px;
+    width: 100%;
 	font-family: monospace;
     font-size: 16px;
   }
@@ -295,7 +294,7 @@ function roundTerrain() {
 //squadramento da 40px e multipli di 28px (finestre)
 function roundTerrainGorilla() {
   for (let i = 0; i < W; i += 40) {
-	terrain[i] = ((terrain[i]/28)|0) * 28;
+	terrain[i] = ((terrain[i]/28)|0) * 28 + 1;
 	if(i>0 && terrain[i] == terrain[i-1]) terrain[i]=terrain[i]+28;
 	for(let j = 1;j < 40;j++) {
 		terrain[i+j] = terrain[i];
@@ -476,7 +475,8 @@ function explode(x, y, radius) {
     if (dist < radius + 4) {
         
         //se un giocatore è stato colpito
-        playTankExplosionSound(); 
+        if(isGorilla) playGorillaVictory(); else playTankExplosionSound(); 
+		
 		spawnCannonExplosion(px,py,p.color);
 
         const isSelfHit = p === projectile.owner;
@@ -1225,6 +1225,7 @@ function playTankExplosionSound() {
 
 function playBeep() {
 	if(isMute) return;
+	if(isGorilla) { playGorillaMelody(); return; }
 	const oscillator = audioCtx.createOscillator();
 	const gain = audioCtx.createGain();
 
@@ -1238,6 +1239,49 @@ function playBeep() {
 	oscillator.start();
 	oscillator.stop(audioCtx.currentTime + 0.1); // durata 250 ms
 }
+
+//gorilla beep :-)
+const noteFreq = {
+  'C': 261.63, 'D': 293.66, 'E': 329.63,
+  'F': 349.23, 'G': 392.00, 'A': 440.00, 'B': 493.88
+};
+
+function playTone(freq, duration, audioCtx, time) {
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.type = 'square';
+  oscillator.frequency.value = freq;
+  oscillator.start(time);
+  oscillator.stop(time + duration);
+}
+
+function playGorillaMelody(forceMelody = "", forceLen = "", forceNoteTime = 1/16) {
+  const melody   = forceMelody ? forceMelody : "EFGFEFG_CC";
+  const noteLen  = forceLen ? forceLen : "2222222224";
+  const noteTime = forceNoteTime ? forceNoteTime : 1 / 16;
+  
+  let currentTime = audioCtx.currentTime;
+
+  for (let i = 0; i < melody.length; i++) {
+	const note = melody[i];
+	const duration = noteTime * noteLen[i];
+    if (noteFreq[note]) {
+      playTone(noteFreq[note]/3, duration, audioCtx, currentTime);
+	}
+	currentTime += duration;
+  }
+}
+
+function playGorillaVictory() {
+  const melody  = "EFGEFDC_EFGEFDC_EFGEFDC_EFGEFDC";
+  const noteLen = "1111111111111111111111111111111";
+  playGorillaMelody(melody, noteLen, 1/32);
+}
+
 
 
 
@@ -1499,10 +1543,14 @@ function changeGorilla() {
 	const game = document.getElementById('game');
 	
 	if (isGorilla) {
+	    reset();
+		playBeep();
 		btn.classList.add('on');
 		game.style.filter = 'contrast(1.3) saturate(1.3)';
 	}
 	else {
+		reset();
+		playBeep();
 		btn.classList.remove('on');
 		game.style.filter = '';
 	}
