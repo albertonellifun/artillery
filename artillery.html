@@ -297,6 +297,7 @@ function roundTerrain() {
 function roundTerrainGorilla() {
   for (let i = 0; i < W; i += 40) {
 	terrain[i] = ((terrain[i]/28)|0) * 28 + 1;
+	if(terrain[i]<28) terrain[i] = 14;
 	if(i>0 && terrain[i] == terrain[i-1]) terrain[i]=terrain[i]+28;
 	for(let j = 1;j < 40;j++) {
 		terrain[i+j] = terrain[i];
@@ -1274,6 +1275,7 @@ function playTone(freq, duration, audioCtx, time) {
 }
 
 function playGorillaMelody(forceMelody = "", forceLen = "", forceNoteTime = 1/16) {
+  if(isMute) return;
   const melody   = forceMelody ? forceMelody : "EFGFEFG_CC";
   const noteLen  = forceLen ? forceLen : "2222222224";
   const noteTime = forceNoteTime ? forceNoteTime : 1 / 16;
@@ -1291,8 +1293,9 @@ function playGorillaMelody(forceMelody = "", forceLen = "", forceNoteTime = 1/16
 }
 
 function playGorillaVictory() {
-  const melody  = "EFGEFDC_EFGEFDC_EFGEFDC_EFGEFDC";
-  const noteLen = "1111111111111111111111111111111";
+  if(isMute) return;
+  const melody  = "EFGEFDC_EFGEFDC_EFGEFDC_EFGEFDC_EFGEFDC";
+  const noteLen = "111111111111111111111111111111111111111";
   playGorillaMelody(melody, noteLen, 1/32);
 }
 
@@ -1715,7 +1718,7 @@ function drawMoon(x, y, radius = 10) {
   ctx.stroke();
 
   //parte in ombra
-  ctx.fillStyle = COLORS.darkCyan;
+  ctx.fillStyle = isGorilla ? COLORS.darkBlue : COLORS.darkCyan;
   ctx.beginPath();
   ctx.arc(x + radius / 3, y - radius / 6, radius * 0.85, 0, Math.PI * 2);
   ctx.fill();
