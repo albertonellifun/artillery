@@ -292,9 +292,11 @@ function roundTerrain() {
   }
 }
 
-//squadramento da 40px
+//squadramento da 40px e multipli di 28px (finestre)
 function roundTerrainGorilla() {
   for (let i = 0; i < W; i += 40) {
+	terrain[i] = ((terrain[i]/28)|0) * 28;
+	if(i>0 && terrain[i] == terrain[i-1]) terrain[i]=terrain[i]+28;
 	for(let j = 1;j < 40;j++) {
 		terrain[i+j] = terrain[i];
 	}
@@ -449,7 +451,7 @@ function launch(player) {
 function explode(x, y, radius) {
   playExplosionSound(); 
 
-  // crea un piccolo cratere
+  //crea un cratere
   const ix = Math.floor(x);
   for (let dx = -radius-1; dx <= radius+1; dx++) {
     const sx = ix + dx;
@@ -464,16 +466,16 @@ function explode(x, y, radius) {
     }
   }
   
-  // controlla se colpisce un cannone
+  //controlla se colpisce un cannone
   for (let p of players) {
     const px = p.x;
 	const py = H - terrain[p.x];
     const dist = Math.hypot(x - px, y - py);//ipotenusa == radice (a^2 + b^2)
     
-    // Controlliamo TUTTI i giocatori
+    //controlliamo TUTTI i giocatori
     if (dist < radius + 4) {
         
-        // Se un giocatore è stato colpito
+        //se un giocatore è stato colpito
         playTankExplosionSound(); 
 		spawnCannonExplosion(px,py,p.color);
 
@@ -485,13 +487,13 @@ function explode(x, y, radius) {
         projectile = null;
 		gameover = true;
         
-        // Fine del gioco/Reset se un cannone è stato colpito
-        setTimeout(reset, 3000); 
+        //fine del gioco/Reset se un cannone è stato colpito
+        setTimeout(reset, isGorilla ? 4000 : 3000); 
         return;
     }
   }
   
-  // fine turno
+  //fine turno
   projectile = null;
   nextTurn();
 }
@@ -737,6 +739,7 @@ function drawTerrain() {
 }
 
 //disegna i palazzi (ogni palazzo largo 40px)
+const windowMap = {}; //memorizza lo stato di ogni finestra
 function drawTerrainGorilla() {
   for (let x=0;x<W;x++) {
 	const palazzo = (x/40) | 0;//1..n
@@ -756,14 +759,27 @@ function drawTerrainGorilla() {
 	
 	if( f1 || f2 || f3 || f4) {
 		let floor = -1;
-		for (let y = H - h + 4; y < H; y += 14) {
+		//disegna dal basso -> finestre sempre rettangolari
+		//disegna dall'alto -> finestre disastrate :-)
+		for (let y = H /*H - h + 4*/; 
+			 y >= H - h /*y < H*/;
+			 y -= 14 /* y += 14 */) {
 		  floor++;
           ctx.beginPath()
-		  ctx.strokeStyle = floor % 2 === 0 ? COLORS.yellow : COLORS.black;
-		  if(f2) ctx.strokeStyle = floor % 2 === 0 ? COLORS.black : COLORS.yellow;//seconda finestra
-		  if(f3 && palazzo%2) ctx.strokeStyle = floor % 2 === 0 ? COLORS.black : COLORS.yellow;//terza finestra
-		  ctx.moveTo(x, y);
-		  ctx.lineTo(x, y + 10);
+		  
+		  //accensione random
+		  const windowKey = `${palazzo}_${f1}_${f2}_${f3}_${f4}_${floor}`;
+		  if (!(windowKey in windowMap) || Math.random() < 0.00001) {
+			let accesa = Math.random();
+            windowMap[windowKey] =  accesa < 0.1 ? COLORS.white : 
+									accesa < 0.5 ? COLORS.yellow : 
+									accesa < 0.9 ? COLORS.black : 
+									COLORS.darkGray;
+          }
+		  
+		  ctx.strokeStyle = windowMap[windowKey];
+		  ctx.moveTo(x, y + 1);
+		  ctx.lineTo(x, y + 11);
 		  ctx.stroke();
         }
 	}
@@ -1023,7 +1039,7 @@ function drawHUD() {
   
   if(isGorilla) {
 	ctx.fillStyle = COLORS.darkBlue;
-	ctx.fillRect(0, H-12, W, H-1);
+	ctx.fillRect(0, H-11, W, H-1);
   }
   
   ctx.font = "10px monospace";
@@ -1050,7 +1066,7 @@ function drawHUD() {
     const tw = ctx.measureText(message).width;
 	if(isGorilla) {
 	  ctx.fillStyle = COLORS.darkBlue;
-	  ctx.fillRect((W-tw) / 2 - 2, H - 22, tw + 2, 12);
+	  ctx.fillRect((W-tw) / 2 - 2, H - 20, tw + 2, 11);
 	}
 	ctx.fillStyle = COLORS.white;
     ctx.fillText(message, (W - tw)/2, H - 12);
