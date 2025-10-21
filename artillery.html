@@ -87,6 +87,7 @@
     background-size: 100% 4px;
     opacity: 1;
 	display:none;
+	z-index: 10;
   }
   
   #touch-controls {
@@ -216,6 +217,7 @@ const COLORS = {
   blue: '#00A', darkBlue: '#008'  
 };
 
+let titles = { default : 'Artillery - Apple ][ clone', gorilla : 'Gorilla.bas for MS-DOS clone', bang : 'Bang! Bang! for Windows 3.1 clone' };
 
 let terrain = new Uint8Array(W);
 let projectile = null;
@@ -791,11 +793,11 @@ function drawGun(p) {
   const y = (H - terrain[p.x]) - 2;
 
   if (isBang) {
+    //cannoncino 
     drawCannoneBang(p, y);
   } else if(isGorilla) {
-    
+    //gestione lancio + esplosione
 	let armType = 3;//giu
-	
 	let isLauncing = projectile && projectile.owner == p;//braccio su
 	let isExploding = explosions && explosions.length;//braccio su alternato
 	
@@ -806,6 +808,7 @@ function drawGun(p) {
 	}
     drawGorilla(p.x, y-18, armType, 0.66);
   } else {
+    //carro armato apple2
     drawCannoneLegacy(p, y);
   }
 }
@@ -871,12 +874,14 @@ function drawCannoneBang(p, y) {
 	
 	//BASE: rettangoli uno sopra l'altro
     ctx.fillStyle = COLORS.black;
-    ctx.fillRect(p.x - 5, y, 10, 2);	
-	ctx.fillRect(p.x - 6, y + 2, 12, 2);	
-	ctx.fillRect(p.x - 7, y + 4, 14, 2);	
+    ctx.fillRect(p.x - 4, y, 8, 2);	
+	ctx.fillRect(p.x - 5, y + 2, 10, 2);	
+	ctx.fillRect(p.x - 6, y + 4, 12, 2);	
 	//asse di rotazione
 	ctx.fillStyle = COLORS.darkGray;
-	ctx.fillRect(p.x -1,y, 2, 2);
+	ctx.fillRect(p.x - 2,y - 1, 4, 4);
+	ctx.fillStyle = COLORS.gray;
+	ctx.fillRect(p.x - 1,y, 2, 2);
 }
 
 //gorilla!
@@ -1075,8 +1080,8 @@ function drawHUD() {
   //titolo dentro con bordi doppi
   if (isDistort) {
 	ctx.fillStyle = COLORS.white;//gray;
-    const title = "Artillery - Apple ][ clone";
-    const tw = ctx.measureText(title).width;
+    const title = isGorilla ? titles.gorilla : isBang ? titles.bang : titles.default;
+	const tw = ctx.measureText(title).width;
     ctx.fillText(title, (W - tw)/2, 14);
 	
 	ctx.strokeStyle = COLORS.white;
@@ -1541,18 +1546,21 @@ function changeGorilla() {
 	isGorilla = !isGorilla;
 	const btn = document.getElementById('gorillaBtn');
 	const game = document.getElementById('game');
+	const title = document.getElementById('title');
 	
 	if (isGorilla) {
 	    reset();
 		playBeep();
 		btn.classList.add('on');
 		game.style.filter = 'contrast(1.3) saturate(1.3)';
+		title.innerHTML = titles.gorilla;
 	}
 	else {
 		reset();
 		playBeep();
 		btn.classList.remove('on');
 		game.style.filter = '';
+		title.innerHTML = isBang ? titles.bang : titles.default;
 	}
 }
 
@@ -1562,16 +1570,20 @@ function changeBang() {
 	isBang = !isBang;
 	const btn = document.getElementById('bangBtn');
 	const game = document.getElementById('game');
+	const title = document.getElementById('title');
 	
 	if (isBang) {
 		btn.classList.add('on');
 		game.style.filter = 'contrast(1.3) saturate(1.3)';
+		title.innerHTML = titles.bang;
 	}
 	else {
 		btn.classList.remove('on');
 		game.style.filter = '';
+		title.innerHTML = isGorilla ? titles.gorilla : titles.default;
 	}
 }
+
 function drawCloud(x, y, scale = 0.5, cloudType = 3) {
   ctx.save();
   ctx.beginPath();
