@@ -1317,12 +1317,32 @@ function changeScanLines() {
 }
 
 
+
+
+
+
+//fps per delfini curiosi e cavalli golosi...
+let lastTime = performance.now();
+let fps = 0;
+let isFps = false;
+
 // ------------------------------------------------
 // QUESTO E' IL GIOCO!
-function loop() {
+function loop(timeStamp) {
   update();
   draw();
   if(isDistort) distort();
+  
+  //fps
+  if(isFps) {
+	const delta = timeStamp - lastTime;
+	fps = Math.round(1000 / delta);
+	ctx.fillStyle = COLORS.white;
+	ctx.font = '10px monospace';
+	ctx.fillText(`FPS: ${fps}`, 2, 10);
+	lastTime = timeStamp;
+  }
+  
   requestAnimationFrame(loop);
 }
 
@@ -1447,6 +1467,7 @@ window.addEventListener('keydown', e => {
 	case 'd' : changeDistort(); break;
 	case 'b' : changeBang(); break;
 	case 'g' : changeGorilla(); break;
+	case 'f' : isFps = !isFps; break;
   }
   
   //altri devono funzionare solo quando tocca all'umano
