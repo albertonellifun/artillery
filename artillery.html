@@ -162,17 +162,19 @@
 			<button type="button" class="c0" data-act="reset">R<br/>RESET</button>
 			
 			<button type="button" class="c1" data-act="p2human" id="p2humanBtn">H<br/>P2 HUMAN</button>
-			<button type="button" class="c0" data-act="mute" id="muteBtn">M<br/>MUTE</button>
+			<button type="button" class="c0" data-act="mute"    id="muteBtn">M<br/>MUTE</button>
 			<div class="full"></div>
 			
 			<button type="button" class="c1" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
-			<button type="button" class="c0 on" data-act="bw" id="bwBtn">W<br/>B/W PLAYERS</button>
-			<button type="button" class="c1" data-act="crt" id="crtBtn">C<br/>CRT SWITCH</button>
+			<button type="button" class="c0 on" data-act="bw"     id="bwBtn">W<br/>B/W PLAYERS</button>
+			<button type="button" class="c1" data-act="crt"       id="crtBtn">C<br/>CRT SWITCH</button>
 			
 			<button type="button" class="c0" data-act="hantarex" id="hantarexBtn">X<br/>HANTAREX MODE</button>
-			<button type="button" class="c1" data-act="distort" id="distortBtn">D<br/>DISTORT MODE</button>
-			<button type="button" class="c0" data-act="bang" id="bangBtn">B<br/>BANG! BANG!</button>
-			<button type="button" class="c1" data-act="gorilla" id="gorillaBtn">G<br/>GORILLA.BAS</button>
+			<button type="button" class="c1" data-act="distort"  id="distortBtn">D<br/>DISTORT MODE</button>
+			<button type="button" class="c0" data-act="parallax" id="parallaxBtn">L<br/>PARALLAX MODE</button>
+			<button type="button" class="c1" data-act="bang"     id="bangBtn">B<br/>BANG! BANG!</button>
+			<button type="button" class="c0" data-act="gorilla"  id="gorillaBtn">G<br/>GORILLA.BAS</button>
+			<button type="button" class="c1" data-act="fps"      id="fpsBtn">F</br>FPS</button>
 		</div>
 	</div>
 </div>
@@ -214,7 +216,10 @@ const COLORS = {
   yellow: '#FF8', darkYellow: '#DD6',
   orange: '#F80', darkOrange: '#D60',
   red: '#A00', darkRed: '#800',
-  blue: '#00A', darkBlue: '#008'  
+  blue: '#00A', darkBlue: '#008',
+  darkestGreen : '#050', 
+  lightGray: '#AAA',
+  lightBlue: '#2BF',
 };
 
 let titles = { default : 'Artillery - Apple ][ clone', gorilla : 'Gorilla.bas for MS-DOS clone', bang : 'Bang! Bang! for Windows 3.1 clone' };
@@ -250,6 +255,7 @@ let isBW = true;//apple2 aveva tutto bianco, terreno verde
 let isDistort = false;//prova a renderizzare il canvas in modalita' boccia per pesciolini
 let isBang = false;//bang! bang! per windows 3.1 ;)
 let isGorilla = false;//gorilla.bas su qbasic ;) ;)
+let isParallax = false;//sfumature e terreno tipo parallasse... figata anacronistica assoluta!
 
 // ------------------------------------------------
 // TERRAIN GENERATION
@@ -597,7 +603,14 @@ function update() {
 // DRAW
 function draw() {
   //clear
-  ctx.fillStyle = isBang ? COLORS.darkCyan : isGorilla ? COLORS.darkBlue : COLORS.black;
+  if(isParallax) {
+	const gradient = ctx.createLinearGradient(0, 0, 0, H);
+	gradient.addColorStop(0, isBang ? COLORS.darkCyan : isGorilla ? COLORS.darkBlue : COLORS.black);
+	gradient.addColorStop(1, isBang ? COLORS.white : isGorilla ? COLORS.lightBlue : COLORS.gray);
+	ctx.fillStyle = gradient;
+  } else {
+	ctx.fillStyle = isBang ? COLORS.darkCyan : isGorilla ? COLORS.darkBlue : COLORS.black;
+  }
   ctx.fillRect(0,0,W,H);
   ctx.strokeStyle = COLORS.white;
   ctx.strokeRect(0,0,W,H);
@@ -734,20 +747,50 @@ function drawTerrain() {
     const h = terrain[x];
 	
 	if(isBang) {
-		ctx.fillStyle = COLORS.green;
-	} else if(isBW) {
-		ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? COLORS.green : COLORS.darkGreen;
+		if(isParallax) {
+			const gradient = ctx.createLinearGradient(x, 0, x, H);
+			gradient.addColorStop(0, COLORS.green);
+			gradient.addColorStop(1, COLORS.darkestGreen);
+			ctx.fillStyle = gradient;
+		} else {
+			ctx.fillStyle = COLORS.green;
+		}
+	}		
+	else if(isBW) {
+		if(isParallax) {
+			const gradient = ctx.createLinearGradient(x, 0, x, H);
+			gradient.addColorStop(0, COLORS.green);
+			gradient.addColorStop(1, COLORS.darkestGreen);
+			ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? gradient : COLORS.darkestGreen;
+		} else {		
+			ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? COLORS.green : COLORS.darkGreen;
+		}
 	}
 	else {
-		ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
+		if(isParallax) {
+			const gradient = ctx.createLinearGradient(x, 0, x, H);
+			gradient.addColorStop(0, terrainColors[currentTerrainColor]);
+			gradient.addColorStop(1, terrainColors[currentTerrainColorDark]);
+			ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? gradient : terrainColors[currentTerrainColorDark];
+		} else {
+			ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
+		}
 	}
 	
 	ctx.fillRect(x, H - h, 1, h);
 	
 	if(isBang) {
 		//bordo scuro
-		ctx.fillStyle = COLORS.darkGreen;
+		ctx.fillStyle = isParallax ? COLORS.darkestGreen : COLORS.darkGreen;
 		ctx.fillRect(x, H - h, 1, 1);
+	}
+	
+	if(isParallax) {
+		const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
+		gradient.addColorStop(0, isBang ? COLORS.darkestGreen : isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
+		gradient.addColorStop(1, isBang ? COLORS.green : isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
+		ctx.fillStyle = gradient;
+		ctx.fillRect(x + 1, H - h, 15, h);
 	}
   }
 }
@@ -757,11 +800,23 @@ const windowMap = {}; //memorizza lo stato di ogni finestra
 function drawTerrainGorilla() {
   for (let x=0;x<W;x++) {
 	const palazzo = (x/40) | 0;//1..n
-	palazzoColor = (palazzo * 1) % terrainColors.length;	
+	
+	palazzoColor = (palazzo * 2) % terrainColors.length;	
 	ctx.fillStyle = terrainColors[palazzoColor];
 	
 	const h = terrain[x];
 	ctx.fillRect(x, H - h, 1, h);
+	
+	if(isParallax && x%40 == 39) {
+		const gradient = ctx.createLinearGradient(x, H-h, x+15, H);
+		gradient.addColorStop(0, terrainColors[palazzoColor]);
+		gradient.addColorStop(0.5, terrainColors[palazzoColor + 1]);
+		gradient.addColorStop(1, COLORS.lightBlue);
+		ctx.fillStyle = gradient;
+	
+		//ctx.fillStyle = terrainColors[palazzoColor + 1];
+		ctx.fillRect(x,H-h,15,h);
+	}
 	
 	
 	let mod = x%40;
@@ -1450,6 +1505,32 @@ function changeDistort() {
 	}
 }
 
+//gestione fps
+function changeFps() {
+	isFps = !isFps;
+	const btn = document.getElementById('fpsBtn');
+	
+	if (isFps) {
+		btn.classList.add('on');
+	}
+	else {
+		btn.classList.remove('on');
+	}
+}
+
+//gestione parallax
+function changeParallax() {
+	isParallax = !isParallax;
+	const btn = document.getElementById('parallaxBtn');
+	
+	if (isParallax) {
+		btn.classList.add('on');
+	}
+	else {
+		btn.classList.remove('on');
+	}
+}
+
 // ------------------------------------------------
 // INPUT
 window.addEventListener('keydown', e => {
@@ -1467,7 +1548,8 @@ window.addEventListener('keydown', e => {
 	case 'd' : changeDistort(); break;
 	case 'b' : changeBang(); break;
 	case 'g' : changeGorilla(); break;
-	case 'f' : isFps = !isFps; break;
+	case 'f' : changeFps(); break;
+	case 'l' : changeParallax(); break;
   }
   
   //altri devono funzionare solo quando tocca all'umano
@@ -1531,6 +1613,8 @@ document.getElementById('touch-controls').addEventListener('click', e => {
 	case 'distort': changeDistort(); break;
 	case 'bang': changeBang(); break;
 	case 'gorilla': changeGorilla(); break;
+	case 'parallax': changeParallax(); break;
+	case 'fps': changeFps(); break;
   }
   
   //altri devono funzionare solo quando tocca all'umano
