@@ -15,9 +15,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-	background: #000;
-	color: #fff;
-	text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
+    background: #000;
+    color: #fff;
+    text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
   }
 
   #monitor.hantarex {
@@ -38,23 +38,23 @@
     padding: 1%;
   }
   @media (orientation: landscape) {
-	#container.hantarex {
-		zoom: 0.75;
-	}
+    #container.hantarex {
+      zoom: 0.75;
+    }
   }
   
 
   #container {
     padding: 8px;
     box-sizing: border-box;
-	justify-content: space-evenly;
+    justify-content: space-evenly;
     display: flex;
     flex-direction: column;
     align-items: center;
-	width: 100vw;
-	height: 100vh;
-	box-shadow: 0 0 10px rgba(0, 100, 0, 1) inset;
-	overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    box-shadow: 0 0 10px rgba(0, 100, 0, 1) inset;
+    overflow: hidden;
   }
 
   canvas {
@@ -86,18 +86,18 @@
     background: repeating-linear-gradient(to right, transparent, transparent 0px, rgba(0, 0, 0, 0.33) 2px, transparent 4px);
     background-size: 100% 4px;
     opacity: 1;
-	display:none;
-	z-index: 10;
+    display:none;
+    z-index: 10;
   }
   
   #touch-controls {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-	align-items: center;
+    align-items: center;
     gap: 2px 8px;
     width: 100%;
-	font-family: monospace;
+    font-family: monospace;
     font-size: 16px;
   }
   #touch-controls button {
@@ -109,15 +109,15 @@
     border: 1px solid #0f0;
     flex: 1 1 80px;
     min-width: 80px;
-	overflow: hidden;
-	text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
-	white-space: nowrap;
+    overflow: hidden;
+    text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
+    white-space: nowrap;
   }
   #touch-controls p {
     flex: 1 1 80px;
     min-width: 80px;
-	overflow: hidden;
-	text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
+    overflow: hidden;
+    text-shadow: 0 0 2px #0f0, 0 0 4px #0f0;
   }
   #touch-controls button:active {
     background: #0f0;
@@ -126,57 +126,57 @@
   #touch-controls button.on {
     background: #0f0 !important;
     color: #000;
-	text-shadow: 0 0 4px #000;
+    text-shadow: 0 0 4px #000;
   }
   #touch-controls button.c0 {
-	background-color: #000;
+    background-color: #000;
   }
   #touch-controls button.c1 {
-	background-color: #040;
+    background-color: #040;
   }
   .full {
-	flex: 1 1 100%;
+    flex: 1 1 100%;
   }
 </style>
 </head>
 <body>
 <div id="monitor">
-	<div id="container">
-		<div id="scanlines-overlay"></div>
+  <div id="container">
+    <div id="scanlines-overlay"></div>
   
-		<div id="title" class="note">Artillery - Apple ][ clone</div>
-		<!-- apple2=280x192, CGA=320x200, alberto=420x200 -->
-		<canvas id="game" width="420" height="200"></canvas>
+    <div id="title" class="note">Artillery - Apple ][ clone</div>
+    <!-- apple2=280x192, CGA=320x200, alberto=420x200 -->
+    <canvas id="game" width="420" height="200"></canvas>
   
-		<div id="touch-controls">
-			<p id="controls-label">CONTROLS:</p>
-			<button type="button" class="c1" data-act="left">&lt;-<br/>ANGLE−</button>
-			<button type="button" class="c1" data-act="angle">A<br/>ANGLE</button>
-			<button type="button" class="c1" data-act="right">-&gt;<br/>ANGLE+</button>
-			
-			<button type="button" class="c0" data-act="power-down">↓<br/>POWER−</button>
-			<button type="button" class="c0" data-act="power">P<br/>POWER</button>
-			<button type="button" class="c0" data-act="power-up">↑<br/>POWER+</button>
-			
-			<button type="button" class="c1" data-act="fire">(SPACE)<br/>FIRE</button>
-			<button type="button" class="c0" data-act="reset">R<br/>RESET</button>
-			
-			<button type="button" class="c1" data-act="p2human" id="p2humanBtn">H<br/>P2 HUMAN</button>
-			<button type="button" class="c0" data-act="mute"    id="muteBtn">M<br/>MUTE</button>
-			<div class="full"></div>
-			
-			<button type="button" class="c1" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
-			<button type="button" class="c0 on" data-act="bw"     id="bwBtn">W<br/>B/W PLAYERS</button>
-			<button type="button" class="c1" data-act="crt"       id="crtBtn">C<br/>CRT SWITCH</button>
-			
-			<button type="button" class="c0" data-act="hantarex" id="hantarexBtn">X<br/>HANTAREX MODE</button>
-			<button type="button" class="c1" data-act="distort"  id="distortBtn">D<br/>DISTORT MODE</button>
-			<button type="button" class="c0" data-act="parallax" id="parallaxBtn">L<br/>PARALLAX MODE</button>
-			<button type="button" class="c1" data-act="bang"     id="bangBtn">B<br/>BANG! BANG!</button>
-			<button type="button" class="c0" data-act="gorilla"  id="gorillaBtn">G<br/>GORILLA.BAS</button>
-			<button type="button" class="c1" data-act="fps"      id="fpsBtn">F</br>FPS</button>
-		</div>
-	</div>
+    <div id="touch-controls">
+      <p id="controls-label">CONTROLS:</p>
+      <button type="button" class="c1" data-act="left">&lt;-<br/>ANGLE−</button>
+      <button type="button" class="c1" data-act="angle">A<br/>ANGLE</button>
+      <button type="button" class="c1" data-act="right">-&gt;<br/>ANGLE+</button>
+      
+      <button type="button" class="c0" data-act="power-down">↓<br/>POWER−</button>
+      <button type="button" class="c0" data-act="power">P<br/>POWER</button>
+      <button type="button" class="c0" data-act="power-up">↑<br/>POWER+</button>
+      
+      <button type="button" class="c1" data-act="fire">(SPACE)<br/>FIRE</button>
+      <button type="button" class="c0" data-act="reset">R<br/>RESET</button>
+      
+      <button type="button" class="c1" data-act="p2human" id="p2humanBtn">H<br/>P2 HUMAN</button>
+      <button type="button" class="c0" data-act="mute"    id="muteBtn">M<br/>MUTE</button>
+      <div class="full"></div>
+      
+      <button type="button" class="c1" data-act="scanlines" id="scanlinesBtn">S<br/>SCANLINES</button>
+      <button type="button" class="c0 on" data-act="bw"     id="bwBtn">W<br/>B/W PLAYERS</button>
+      <button type="button" class="c1" data-act="crt"       id="crtBtn">C<br/>CRT SWITCH</button>
+      
+      <button type="button" class="c0" data-act="hantarex" id="hantarexBtn">X<br/>HANTAREX MODE</button>
+      <button type="button" class="c1" data-act="distort"  id="distortBtn">D<br/>DISTORT MODE</button>
+      <button type="button" class="c0" data-act="parallax" id="parallaxBtn">L<br/>PARALLAX MODE</button>
+      <button type="button" class="c1" data-act="bang"     id="bangBtn">B<br/>BANG! BANG!</button>
+      <button type="button" class="c0" data-act="gorilla"  id="gorillaBtn">G<br/>GORILLA.BAS</button>
+      <button type="button" class="c1" data-act="fps"      id="fpsBtn">F</br>FPS</button>
+    </div>
+  </div>
 </div>
 
 <script type="text/javascript">
@@ -219,6 +219,12 @@ const COLORS = {
   blue: '#00A', darkBlue: '#008',
   darkestGreen : '#050', 
   lightGray: '#AAA',
+  lightGreen: '#0C0',
+  lightCyan: '#AEF',
+  lightPurple: '#EAF',
+  lightYellow: '#FFA',
+  lightOrange: '#FA2',
+  lightRed: '#C22',
   lightBlue: '#2BF',
 };
 
@@ -231,8 +237,8 @@ let frame = 0;
 
 // players
 const players = [
-  { name:"PLAYER 1", color: COLORS.cyan,   darkColor: COLORS.darkCyan,   x:25,     angle:60, power:50, isAI:false },
-  { name:"PLAYER 2", color: COLORS.purple, darkColor: COLORS.darkPurple, x:W - 45, angle:60, power:50, isAI:true }
+  { name:"PLAYER 1", color: COLORS.cyan,   darkColor: COLORS.darkCyan,   lightColor: COLORS.lightCyan,   x:25,     angle:60, power:50, isAI:false },
+  { name:"PLAYER 2", color: COLORS.purple, darkColor: COLORS.darkPurple, lightColor: COLORS.lightPurple, x:W - 45, angle:60, power:50, isAI:true }
 ];
 
 let currentPlayer = 0;
@@ -257,39 +263,46 @@ let isBang = false;//bang! bang! per windows 3.1 ;)
 let isGorilla = false;//gorilla.bas su qbasic ;) ;)
 let isParallax = false;//sfumature e terreno tipo parallasse... figata anacronistica assoluta!
 
+//fps per delfini curiosi e cavalli golosi...
+let lastTime = performance.now();
+let fps = 0;
+let isFps = false;
+let minFps = 9999;
+
+
 // ------------------------------------------------
 // TERRAIN GENERATION
 let terrainColors = [ COLORS.green, COLORS.darkGreen,
-					  COLORS.red, COLORS.darkRed,
-					  COLORS.cyan, COLORS.darkCyan,
-					  COLORS.purple, COLORS.darkPurple,
-					  COLORS.orange, COLORS.darkOrange,
-					  COLORS.gray, COLORS.darkGray,
-					  COLORS.yellow, COLORS.darkYellow ];
+                      COLORS.red, COLORS.darkRed,
+                      COLORS.cyan, COLORS.darkCyan,
+                      COLORS.purple, COLORS.darkPurple,
+                      COLORS.orange, COLORS.darkOrange,
+                      COLORS.gray, COLORS.darkGray,
+                      COLORS.yellow, COLORS.darkYellow ];
 let currentTerrainColor = -2;
 let currentTerrainColorDark = -1;
 
 function genTerrain() { 
-	//random color
-	currentTerrainColor = (currentTerrainColor + 2) % terrainColors.length;
-	currentTerrainColorDark = currentTerrainColor + 1;
+  //random color
+  currentTerrainColor = (currentTerrainColor + 2) % terrainColors.length;
+  currentTerrainColorDark = currentTerrainColor + 1;
 
-	//random shape
-	const terrainGenerators = [ genTerrainPicco, genTerrainGradino, genTerrainDune  ];
-	const randomIndex = (Math.random() * terrainGenerators.length) | 0;
-	terrainGenerators[randomIndex]();
+  //random shape
+  const terrainGenerators = [ genTerrainPicco, genTerrainGradino, genTerrainDune  ];
+  const randomIndex = (Math.random() * terrainGenerators.length) | 0;
+  terrainGenerators[randomIndex]();
 
-	//appiattisce terreno sotto la bandiera come sul gioco originale
-	const flagX = W - 15;  
-	for(let i=flagX-5;i<W;i++) { 
-		terrain[i] = terrain[flagX-5]; 
-	}
-	
-	//arrotonda i picchi
-	if(randomIndex !== 0) roundTerrain();
-	
-	//squadra per i palazzi da 40px
-	if(isGorilla) roundTerrainGorilla();
+  //appiattisce terreno sotto la bandiera come sul gioco originale
+  const flagX = W - 15;  
+  for(let i=flagX-5;i<W;i++) { 
+    terrain[i] = terrain[flagX-5]; 
+  }
+  
+  //arrotonda i picchi
+  if(randomIndex !== 0) roundTerrain();
+  
+  //squadra per i palazzi da 40px
+  if(isGorilla) roundTerrainGorilla();
 }
 
 //arrotondamento leggero del terreno
@@ -299,15 +312,20 @@ function roundTerrain() {
   }
 }
 
-//squadramento da 40px e multipli di 28px (finestre)
+//squadramento da 40px e multipli di 14px (finestra)
 function roundTerrainGorilla() {
   for (let i = 0; i < W; i += 40) {
-	terrain[i] = ((terrain[i]/28)|0) * 28 + 1;
-	if(terrain[i]<28) terrain[i] = 14;
-	if(i>0 && terrain[i] == terrain[i-1]) terrain[i]=terrain[i]+28;
-	for(let j = 1;j < 40;j++) {
-		terrain[i+j] = terrain[i];
-	}
+    terrain[i] = ( (terrain[i] / 14) |0 ) * 14 + 1;
+	if (Math.random() < 0.01) terrain[i] = 170;//random palazzone di 12 piani
+    
+	if (i>0 && terrain[i] == terrain[i-1]) terrain[i] = terrain[i] + (Math.random() < 0.5 ? -14 : 14);
+	
+	if (terrain[i] > 170) terrain[i] = 170;	
+	if (terrain[i] < 14) terrain[i] = 14;//altezza minima 14px = 1 finestra
+    
+    for(let j = 1;j < 40;j++) {
+      terrain[i+j] = terrain[i];
+    }
   }
 }
 
@@ -359,25 +377,24 @@ function genTerrainPicco() {
     const distanceToCenter = Math.abs(x - stepX);
 
     if (distanceToCenter < PEAK_WIDTH && ((x >= stepX && !altoASinistra) || (x < stepX && altoASinistra))) {
-	  let mountainHeight = 0;
-	  if(piccoParabolico) {
-		// Calcola quanto siamo lontani dal centro (ratio va da 0 a 1)
-		const ratio = distanceToCenter / PEAK_WIDTH;
-		// Funzione parabolica (1 - ratio^2) per creare un picco a forma di collina
-		mountainHeight = PEAK_HEIGHT * (1 - ratio * ratio);
-	  }
-	  else {
-		const safeDistance = Math.max(distanceToCenter, 1); // evita 1/0
-		const inverseFalloff = 1 / (safeDistance/2); // più vicino al centro = valore più alto
-
-		// Normalizza l'inverseFalloff tra 0 e 1
-		const maxInverse = 1 / 1;         // quando distance = 1
-		const minInverse = 1 / PEAK_WIDTH; // quando distance = PEAK_WIDTH
-		const normalized = (inverseFalloff - minInverse) / (maxInverse - minInverse);
-		
-		mountainHeight = PEAK_HEIGHT * normalized;
+      let mountainHeight = 0;
+      if(piccoParabolico) {
+        // Calcola quanto siamo lontani dal centro (ratio va da 0 a 1)
+        const ratio = distanceToCenter / PEAK_WIDTH;
+        // Funzione parabolica (1 - ratio^2) per creare un picco a forma di collina
+        mountainHeight = PEAK_HEIGHT * (1 - ratio * ratio);
       }
-	  
+      else {
+        const safeDistance = Math.max(distanceToCenter, 1); // evita 1/0
+        const inverseFalloff = 1 / (safeDistance/2); // più vicino al centro = valore più alto
+	    // Normalizza l'inverseFalloff tra 0 e 1
+        const maxInverse = 1 / 1;         // quando distance = 1
+        const minInverse = 1 / PEAK_WIDTH; // quando distance = PEAK_WIDTH
+        const normalized = (inverseFalloff - minInverse) / (maxInverse - minInverse);
+      
+        mountainHeight = PEAK_HEIGHT * normalized;
+      }
+    
       // Sovrapponi il picco all'altezza di base.
       height += mountainHeight;
     }
@@ -469,15 +486,15 @@ function explode(x, y, radius) {
       //const drop = Math.round((radius - dist) * (0.8 + Math.random()*0.4));//buco a V
       const factor = 1 - ((dist/radius)*(dist/radius));//buco a parabola
       const drop = Math.round(radius * factor * (0.8 + Math.random()*0.4));
-	  
-	  terrain[sx] = Math.max(0, terrain[sx] - drop);
+    
+    terrain[sx] = Math.max(0, terrain[sx] - drop);
     }
   }
   
   //controlla se colpisce un cannone
   for (let p of players) {
     const px = p.x;
-	const py = H - terrain[p.x];
+  const py = H - terrain[p.x];
     const dist = Math.hypot(x - px, y - py);//ipotenusa == radice (a^2 + b^2)
     
     //controlliamo TUTTI i giocatori
@@ -485,8 +502,8 @@ function explode(x, y, radius) {
         
         //se un giocatore è stato colpito
         if(isGorilla) playGorillaVictory(); else playTankExplosionSound(); 
-		
-		spawnCannonExplosion(px,py,p.color);
+    
+    spawnCannonExplosion(px,py,p.color);
 
         const isSelfHit = p === projectile.owner;
         const targetName = isSelfHit ? "HIMSELF" : p.name;
@@ -494,7 +511,7 @@ function explode(x, y, radius) {
 
         message = `${attackerName} DESTROYS ${targetName}!`;
         projectile = null;
-		gameover = true;
+    gameover = true;
         
         //fine del gioco/Reset se un cannone è stato colpito
         setTimeout(reset, isGorilla ? 4000 : 3000); 
@@ -517,8 +534,8 @@ function spawnCannonExplosion(px, py, pcolor) {
     const vx = Math.cos(angle) * speed;
     const vy = Math.sin(angle) * speed;
     explosions.push({
-	  ox : px,
-	  oy : py,
+    ox : px,
+    oy : py,
       x: px,
       y: py,
       vx: vx,
@@ -571,18 +588,18 @@ function update() {
     projectile.vy += projectile.ay;
     projectile.x += projectile.vx;
     projectile.y += projectile.vy;
-	
-	const xidx = Math.floor(projectile.x);
+  
+  const xidx = Math.floor(projectile.x);
     if (xidx >= 0 && xidx < W) {
       const groundY = H - terrain[xidx];
       if (projectile.y >= groundY) {
         explode(projectile.x, projectile.y, 10);
-		projectile = null;
-	  }
+    projectile = null;
+    }
     }
     if (projectile && (projectile.x < -50 || projectile.x > W+50 || projectile.y > H+50)) {
       projectile = null;
-	  nextTurn();
+    nextTurn();
     }
   }
   
@@ -598,99 +615,114 @@ function update() {
 
 
 
+//black or blue?
+function clearSky() {
+  if(isParallax) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, H);
+    gradient.addColorStop(0, isBang ? COLORS.darkCyan : isGorilla ? COLORS.darkBlue : COLORS.black);
+    gradient.addColorStop(1, isBang ? COLORS.white : isGorilla ? COLORS.lightBlue : COLORS.gray);
+    ctx.fillStyle = gradient;
+  } else {
+    ctx.fillStyle = isBang ? COLORS.darkCyan : isGorilla ? COLORS.darkBlue : COLORS.black;
+  }
+  ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = COLORS.white;
+  ctx.strokeRect(0,0,W,H);
+}
+
+//ghghgh
+function drawSkyAccessories() {
+  //BANG ha le nuvolette + sole
+  //GORILLA ha solo il SOLE
+  if(isBang) {
+    let currentTime = new Date();
+    let currentTimeMMSS = currentTime.getMinutes() * 60 + currentTime.getSeconds();//W/2 + minuti + secondi
+    let posx = (W/2 + currentTimeMMSS);
+    
+    let sunx = (posx / 10) % W | 0;
+    let c1x = (40 + (posx / 3)) % W  | 0;
+    let c2x = (70 + (posx / 4)) % W | 0;
+    let c3x = (100 + (posx / 5)) % W | 0;
+    let c4x = (140 + (posx / 4)) % W | 0;
+    let c5x = (160 + (posx / 3)) % W | 0;
+    
+    if(currentTime.getHours() > 19) {
+      //luna
+      drawMoon(sunx, 20, 10);
+      //nuvole
+      drawCloud(c3x, 25, 0.25, 1);
+      drawCloud(c4x, 25, 0.35, 3);
+      drawCloud(c5x, 30, 0.25, 2);
+    } else {
+      //sole
+      let ooo = projectile != null && Math.abs(projectile.x - sunx) < 10 && Math.abs(projectile.y - 20) < 10;
+      drawSun(sunx, 20, 10, ooo, 8);
+      //nuvole
+      drawCloud(c1x, 25, 0.25, 1);
+      drawCloud(c2x, 35, 0.45, 2);
+      drawCloud(c3x, 25, 0.35, 3);
+      drawCloud(c4x, 30, 0.55, 1);
+      drawCloud(c5x, 30, 0.25, 2);
+      //uccelli
+      for(var i=0;i<3;i++) {  
+        drawBird((60 + i*W/3 + c1x) % W, 30 + i*2);
+        drawBird((75 + i*W/3 + c1x) % W, 44 + i*2);
+        drawBird((90 + i*W/3 + c1x) % W, 35 - i*2);
+      }
+    }
+  } else if(isGorilla) {
+    let currentTime = new Date();
+    let currentTimeMMSS = currentTime.getMinutes() * 60 + currentTime.getSeconds();//W/2 + minuti + secondi
+    let posx = (W/2 + currentTimeMMSS);
+  
+    let sunx = (posx / 10) % W | 0;
+  
+    if(currentTime.getHours() > 19) {
+      //luna
+      drawMoon(sunx, 20, 10);
+    } else {
+      //sole
+      let ooo = projectile != null && Math.abs(projectile.x - sunx) < 10 && Math.abs(projectile.y - 20) < 10;
+      drawSun(sunx, 20, 9, ooo, 16);
+    }
+  }
+}
 
 // ------------------------------------------------
 // DRAW
 function draw() {
   //clear
-  if(isParallax) {
-	const gradient = ctx.createLinearGradient(0, 0, 0, H);
-	gradient.addColorStop(0, isBang ? COLORS.darkCyan : isGorilla ? COLORS.darkBlue : COLORS.black);
-	gradient.addColorStop(1, isBang ? COLORS.white : isGorilla ? COLORS.lightBlue : COLORS.gray);
-	ctx.fillStyle = gradient;
-  } else {
-	ctx.fillStyle = isBang ? COLORS.darkCyan : isGorilla ? COLORS.darkBlue : COLORS.black;
-  }
-  ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle = COLORS.white;
-  ctx.strokeRect(0,0,W,H);
+  clearSky();
 
-  //BANG!
-  if(isBang) {
-	let currentTime = new Date();
-	let currentTimeMMSS = currentTime.getMinutes() * 60 + currentTime.getSeconds();//W/2 + minuti + secondi
-	let posx = (W/2 + currentTimeMMSS);
-	
-	let sunx = (posx / 10) % W | 0;
-	let c1x = (40 + (posx / 3)) % W  | 0;
-	let c2x = (70 + (posx / 4)) % W | 0;
-	let c3x = (100 + (posx / 5)) % W | 0;
-    let c4x = (140 + (posx / 4)) % W | 0;
-	let c5x = (160 + (posx / 3)) % W | 0;
-	
-	if(currentTime.getHours() > 19) {
-		//luna
-		drawMoon(sunx, 20, 10);
-		//nuvole
-		drawCloud(c3x, 25, 0.25, 1);
-		drawCloud(c4x, 25, 0.35, 3);
-		drawCloud(c5x, 30, 0.25, 2);
-	} else {
-		//sole
-		let ooo = projectile != null && Math.abs(projectile.x - sunx) < 10 && Math.abs(projectile.y - 20) < 10;
-		drawSun(sunx, 20, 10, ooo, 8);
-		//nuvole
-		drawCloud(c1x, 25, 0.25, 1);
-		drawCloud(c2x, 35, 0.45, 2);
-		drawCloud(c3x, 25, 0.35, 3);
-		drawCloud(c4x, 30, 0.55, 1);
-		drawCloud(c5x, 30, 0.25, 2);
-		//uccelli
-		for(var i=0;i<3;i++) {	
-			drawBird((60 + i*W/3 + c1x) % W, 30 + i*2);
-			drawBird((75 + i*W/3 + c1x) % W, 44 + i*2);
-			drawBird((90 + i*W/3 + c1x) % W, 35 - i*2);
-		}
-	}
-  } else if(isGorilla) {
-  	let currentTime = new Date();
-	let currentTimeMMSS = currentTime.getMinutes() * 60 + currentTime.getSeconds();//W/2 + minuti + secondi
-	let posx = (W/2 + currentTimeMMSS);
-	
-	let sunx = (posx / 10) % W | 0;
-	
-	if(currentTime.getHours() > 19) {
-		//luna
-		drawMoon(sunx, 20, 10);
-	} else {
-		//sole
-		let ooo = projectile != null && Math.abs(projectile.x - sunx) < 10 && Math.abs(projectile.y - 20) < 10;
-		drawSun(sunx, 20, 9, ooo, 16);
-	}
-  }
-	  
+  //sun/clouds/birds/etc...
+  drawSkyAccessories();
+    
   //terrain
-  isGorilla ? drawTerrainGorilla() : drawTerrain();
+  if(isGorilla) drawTerrainGorilla();
+  else if(isBang) drawTerrainBang();
+  else drawTerrain();
+  
+  //flag
+  drawWindFlag();
+ 
 
   //players
   players.forEach(p => drawGun(p));
   
-  //flag
-  drawWindFlag();
-
+  
   //disegna projectile
   if (projectile) {
-	if(isBang) drawProjectileBang();//palla
-	else if(isGorilla) drawProjectileBanana();//banana
-	else drawProjectile();//missiletto standard
+    if(isBang) drawProjectileBang();//palla
+    else if(isGorilla) drawProjectileBanana();//banana
+    else drawProjectile();//missiletto standard
   }
   
   //disegna esplosioni radiali
   for (const e of explosions) {
     ctx.strokeStyle = e.color;
     ctx.beginPath();
-	ctx.moveTo(e.ox, e.oy);
-	ctx.lineTo(e.x, e.y);
+    ctx.moveTo(e.ox, e.oy);
+    ctx.lineTo(e.x, e.y);
     ctx.stroke();
   }
 
@@ -700,98 +732,140 @@ function draw() {
 
 //disegna palla da cannone
 function drawProjectileBang() {
-	ctx.fillStyle = COLORS.gray;
-	ctx.strokeStyle = COLORS.darkGray;
-	ctx.beginPath();
-	ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
-	ctx.fill();
-	ctx.stroke();
+  ctx.fillStyle = COLORS.gray;
+  ctx.strokeStyle = COLORS.darkGray;
+  ctx.beginPath();
+  ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
 }
 
 //disegna projectile
 function drawProjectile() {
-	//scia
-	ctx.strokeStyle = isBW ? COLORS.green : projectile.owner.color;
-	ctx.beginPath();
-	ctx.moveTo(projectile.x, projectile.y);
-	//+ avanti tipo missile con razzo dietro, - con punta bianca e scia colorata (mahhh)
-	ctx.lineTo(projectile.x + projectile.vx * 2, projectile.y + projectile.vy * 2);
-	ctx.stroke();
-	//punta
-	ctx.fillStyle = COLORS.white;
-	ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
+  //scia
+  ctx.strokeStyle = isBW ? COLORS.green : projectile.owner.color;
+  ctx.beginPath();
+  ctx.moveTo(projectile.x, projectile.y);
+  //+ avanti tipo missile con razzo dietro, - con punta bianca e scia colorata (mahhh)
+  ctx.lineTo(projectile.x + projectile.vx * 2, projectile.y + projectile.vy * 2);
+  ctx.stroke();
+  //punta
+  ctx.fillStyle = COLORS.white;
+  ctx.fillRect(projectile.x-1, projectile.y-1, 2,2);
 }
 
 //disegna banana!!!
 function drawProjectileBanana() {
-	const angle = Math.atan2(projectile.vy, projectile.vx);
-	ctx.save();
-	ctx.translate(projectile.x, projectile.y);
-	ctx.rotate(angle);
-	const length = 8;//lunghezza totale
-	const thickness = 0.5;//distanza tra arco esterno e interno
-	ctx.beginPath();
-	ctx.strokeStyle = COLORS.yellow;
-	ctx.lineWidth = 1;
-	ctx.moveTo(-length/2, -thickness);
-	ctx.quadraticCurveTo(0, -length, length/2, -thickness);
-	ctx.moveTo(-length/2, thickness);
-	ctx.quadraticCurveTo(0, -length/2, length/2, thickness);
-	ctx.stroke();
-	ctx.restore();
+  const angle = Math.atan2(projectile.vy, projectile.vx);
+  ctx.save();
+  ctx.translate(projectile.x, projectile.y);
+  ctx.rotate(angle);
+  const length = 8;//lunghezza totale
+  const thickness = 0.5;//distanza tra arco esterno e interno
+  ctx.beginPath();
+  ctx.strokeStyle = COLORS.yellow;
+  ctx.lineWidth = 1;
+  ctx.moveTo(-length/2, -thickness);
+  ctx.quadraticCurveTo(0, -length, length/2, -thickness);
+  ctx.moveTo(-length/2, thickness);
+  ctx.quadraticCurveTo(0, -length/2, length/2, thickness);
+  ctx.stroke();
+  ctx.restore();
 }
 
 //disegna terreno
 function drawTerrain() {
   for (let x=0;x<W;x++){
     const h = terrain[x];
+  
+    if(isBW) {
+      if(isParallax) {
+        const gradient = ctx.createLinearGradient(x, 0, x, H);
+        gradient.addColorStop(0, COLORS.green);
+        gradient.addColorStop(1, COLORS.darkestGreen);
+        ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? gradient : COLORS.darkestGreen;
+      } else {    
+        ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? COLORS.green : COLORS.darkGreen;
+      }
+    }
+    else {
+      if(isParallax) {
+        const gradient = ctx.createLinearGradient(x, 0, x, H);
+        gradient.addColorStop(0, terrainColors[currentTerrainColor]);
+        gradient.addColorStop(1, terrainColors[currentTerrainColorDark]);
+        ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? gradient : terrainColors[currentTerrainColorDark];
+      } else {
+        ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
+      }
+    }
+    
+    ctx.fillRect(x, H - h, 1, h);
+    
+    if(isParallax && x > 0 && terrain[x] <= terrain[x-1] || Math.abs(terrain[x] - terrain[x-1]) > 2) {
+      const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
+      gradient.addColorStop(0, isBang ? COLORS.darkestGreen : isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
+      gradient.addColorStop(1, isBang ? COLORS.green : isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
+      ctx.fillStyle = gradient;
+      //rettangolare
+      //ctx.fillRect(x + 1, H - h, 15, h);
+	  //trapezio
+      ctx.beginPath();
+      ctx.moveTo(x + 1, H - h);          // vertice sinistro alto
+      ctx.lineTo(x + 1 + 20, H - h + 10); // vertice destro alto (più in su di 10px)
+      ctx.lineTo(x + 1 + 20, H);          // vertice destro basso
+      ctx.lineTo(x + 1, H);               // vertice sinistro basso
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+}
+
+//disegna terreno bang
+function drawTerrainBang() {
+  for (let x=0;x<W;x++){
+    const h = terrain[x];
+    
+    if(isParallax) {
+	  //sfumatura terreno
+      const gradient = ctx.createLinearGradient(x, 0, x, H);
+      gradient.addColorStop(0, COLORS.lightGreen);
+	  gradient.addColorStop(1, COLORS.darkestGreen);
+      ctx.fillStyle = gradient;
+    } else {
+      ctx.fillStyle = COLORS.green;
+    }
+    
+    ctx.fillRect(x, H - h, 1, h);
 	
-	if(isBang) {
-		if(isParallax) {
-			const gradient = ctx.createLinearGradient(x, 0, x, H);
-			gradient.addColorStop(0, COLORS.green);
-			gradient.addColorStop(1, COLORS.darkestGreen);
-			ctx.fillStyle = gradient;
-		} else {
-			ctx.fillStyle = COLORS.green;
-		}
-	}		
-	else if(isBW) {
-		if(isParallax) {
-			const gradient = ctx.createLinearGradient(x, 0, x, H);
-			gradient.addColorStop(0, COLORS.green);
-			gradient.addColorStop(1, COLORS.darkestGreen);
-			ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? gradient : COLORS.darkestGreen;
-		} else {		
-			ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? COLORS.green : COLORS.darkGreen;
-		}
-	}
-	else {
-		if(isParallax) {
-			const gradient = ctx.createLinearGradient(x, 0, x, H);
-			gradient.addColorStop(0, terrainColors[currentTerrainColor]);
-			gradient.addColorStop(1, terrainColors[currentTerrainColorDark]);
-			ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? gradient : terrainColors[currentTerrainColorDark];
-		} else {
-			ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
-		}
-	}
-	
-	ctx.fillRect(x, H - h, 1, h);
-	
-	if(isBang) {
-		//bordo scuro
-		ctx.fillStyle = isParallax ? COLORS.darkestGreen : COLORS.darkGreen;
-		ctx.fillRect(x, H - h, 1, 1);
-	}
-	
-	if(isParallax) {
-		const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
-		gradient.addColorStop(0, isBang ? COLORS.darkestGreen : isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
-		gradient.addColorStop(1, isBang ? COLORS.green : isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
-		ctx.fillStyle = gradient;
-		ctx.fillRect(x + 1, H - h, 15, h);
-	}
+	/*
+	//paesaggio doppio sfumato xxxxxx
+	const gradient = ctx.createLinearGradient(x, 0, x, H);
+    gradient.addColorStop(0, "rgba(255,255,255,0.33)");//COLORS.green);
+	gradient.addColorStop(1, "rgba(0,0,0,0)");//COLORS.darkGreen);	
+    ctx.fillStyle = gradient;
+	ctx.fillRect(x, H - h + 10, 1, h + 10);
+	*/
+    
+    //bordo scuro
+    ctx.fillStyle = isParallax ? COLORS.darkestGreen : COLORS.darkGreen;
+    ctx.fillRect(x, H - h, 1, 1);
+    
+    if(isParallax && x > 0 && terrain[x] <= terrain[x-1] || Math.abs(terrain[x] - terrain[x-1]) > 2) {
+      const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
+      gradient.addColorStop(0, isBang ? COLORS.darkestGreen : isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
+      gradient.addColorStop(1, isBang ? COLORS.green : isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
+      ctx.fillStyle = gradient;
+	  //rettangolare
+      //ctx.fillRect(x + 1, H - h, 15, h);
+	  //trapezio
+      ctx.beginPath();
+      ctx.moveTo(x + 1, H - h);           // vertice sinistro alto
+      ctx.lineTo(x + 1 + 20, H - h + 10); // vertice destro alto (più in giu di 10px)
+      ctx.lineTo(x + 1 + 20, H);          // vertice destro basso
+      ctx.lineTo(x + 1, H);               // vertice sinistro basso
+      ctx.closePath();
+      ctx.fill();
+    }
   }
 }
 
@@ -799,59 +873,65 @@ function drawTerrain() {
 const windowMap = {}; //memorizza lo stato di ogni finestra
 function drawTerrainGorilla() {
   for (let x=0;x<W;x++) {
-	const palazzo = (x/40) | 0;//1..n
-	
-	palazzoColor = (palazzo * 2) % terrainColors.length;	
-	ctx.fillStyle = terrainColors[palazzoColor];
-	
-	const h = terrain[x];
-	ctx.fillRect(x, H - h, 1, h);
-	
-	if(isParallax && x%40 == 39) {
-		const gradient = ctx.createLinearGradient(x, H-h, x+15, H);
-		gradient.addColorStop(0, terrainColors[palazzoColor]);
-		gradient.addColorStop(0.5, terrainColors[palazzoColor + 1]);
-		gradient.addColorStop(1, COLORS.lightBlue);
-		ctx.fillStyle = gradient;
-	
-		//ctx.fillStyle = terrainColors[palazzoColor + 1];
-		ctx.fillRect(x,H-h,15,h);
-	}
-	
-	
-	let mod = x%40;
-	
-	let f1 = mod > 2 && mod < 8;
-	let f2 = mod > 12 && mod < 18;
-	let f3 = mod > 22 && mod < 28;
-	let f4 = mod > 32 && mod < 38;
-	
-	if( f1 || f2 || f3 || f4) {
-		let floor = -1;
-		//disegna dal basso -> finestre sempre rettangolari
-		//disegna dall'alto -> finestre disastrate :-)
-		for (let y = H /*H - h + 4*/; 
-			 y >= H - h /*y < H*/;
-			 y -= 14 /* y += 14 */) {
-		  floor++;
-          ctx.beginPath()
-		  
-		  //accensione random
-		  const windowKey = `${palazzo}_${f1}_${f2}_${f3}_${f4}_${floor}`;
-		  if (!(windowKey in windowMap) || Math.random() < 0.00001) {
-			let accesa = Math.random();
-            windowMap[windowKey] =  accesa < 0.1 ? COLORS.white : 
-									accesa < 0.5 ? COLORS.yellow : 
-									accesa < 0.9 ? COLORS.black : 
-									COLORS.darkGray;
-          }
-		  
-		  ctx.strokeStyle = windowMap[windowKey];
-		  ctx.moveTo(x, y + 1);
-		  ctx.lineTo(x, y + 11);
-		  ctx.stroke();
-        }
-	}
+  const palazzo = (x/40) | 0;//1..n
+  
+  palazzoColor = (palazzo * 2) % terrainColors.length;  
+  ctx.fillStyle = terrainColors[palazzoColor];
+  
+  const h = terrain[x];
+  ctx.fillRect(x, H - h, 1, h);
+  
+  if(isParallax && x%40 == 39) {
+    const gradient = ctx.createLinearGradient(x, H - h, x + 15, H);
+    gradient.addColorStop(0, terrainColors[palazzoColor]);
+    gradient.addColorStop(0.5, terrainColors[palazzoColor + 1]);
+    gradient.addColorStop(1, COLORS.lightBlue);
+    ctx.fillStyle = gradient;
+  
+    //trapezio
+    ctx.beginPath();
+    ctx.moveTo(x, H - h);          // vertice sinistro alto
+    ctx.lineTo(x + 20, H - h + 10); // vertice destro alto (più in su di 10px)
+    ctx.lineTo(x + 20, H);          // vertice destro basso
+    ctx.lineTo(x, H);               // vertice sinistro basso
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  
+  let mod = x%40;
+  
+  let f1 = mod > 2 && mod < 8;
+  let f2 = mod > 12 && mod < 18;
+  let f3 = mod > 22 && mod < 28;
+  let f4 = mod > 32 && mod < 38;
+  
+  if( f1 || f2 || f3 || f4) {
+    let floor = -1;
+    //disegna dal basso -> finestre sempre rettangolari
+    //disegna dall'alto -> finestre disastrate :-)
+    for (let y = H /*H - h + 4*/; 
+       y >= H - h /*y < H*/;
+       y -= 14 /* y += 14 */) {
+      floor++;
+      ctx.beginPath()
+      
+      //accensione random
+      const windowKey = `${palazzo}_${f1}_${f2}_${f3}_${f4}_${floor}`;
+      if (!(windowKey in windowMap) || Math.random() < 0.00001) {
+        let accesa = Math.random();
+        windowMap[windowKey] =  accesa < 0.1 ? COLORS.white : 
+                                accesa < 0.5 ? COLORS.yellow : 
+                                accesa < 0.9 ? COLORS.black : 
+                                COLORS.darkGray;
+      }
+      
+      ctx.strokeStyle = windowMap[windowKey];
+      ctx.moveTo(x, y + 1 );
+      ctx.lineTo(x, y + 11);
+      ctx.stroke();
+      }
+    }
   }
 }
 
@@ -864,16 +944,16 @@ function drawGun(p) {
     drawCannoneBang(p, y);
   } else if(isGorilla) {
     //gestione lancio + esplosione
-	let armType = 3;//giu
-	let isLauncing = projectile && projectile.owner == p;//braccio su
-	let isExploding = explosions && explosions.length;//braccio su alternato
-	
-	if(isExploding) {
-		armType = ((new Date().getMilliseconds()*4)/1000|0) % 2 == 0 ? 1 : 2;//0..1000 -> 0..3999 -> 0..3 -> 1/2/1/2
-	} else if(isLauncing) {
-		armType = 1;
-	}
-    drawGorilla(p, y-18, armType, 0.66);
+    let armType = 3;//giu
+    let isLauncing = projectile && projectile.owner == p;//braccio su
+    let isExploding = explosions && explosions.length;//braccio su alternato
+    
+    if(isExploding) {
+      armType = ((new Date().getMilliseconds()*4)/1000|0) % 2 == 0 ? 1 : 2;//0..1000 -> 0..3999 -> 0..3 -> 1/2/1/2
+    } else if(isLauncing) {
+      armType = 1;
+    }
+    drawGorilla(p, y-19, armType, 0.66);
   } else {
     //carro armato apple2
     drawCannoneLegacy(p, y);
@@ -882,7 +962,7 @@ function drawGun(p) {
 
 //carro armato brutto
 function drawCannoneLegacy(p, y) {
-	// CORPO del cannone: trapezio rovesciato
+  // CORPO del cannone: trapezio rovesciato
     ctx.fillStyle = isBW ? COLORS.white : p.color;
     ctx.beginPath();
     ctx.moveTo(p.x - 5, y);     // punto in alto a sinistra
@@ -898,7 +978,7 @@ function drawCannoneLegacy(p, y) {
       ctx.moveTo(p.x - 3, y + 1.5);
       ctx.lineTo(p.x + 3, y + 1.5);
       ctx.stroke();
-    }	
+    }  
       
     // CANNA del cannone doppia
     const a = p.angle * Math.PI / 180;
@@ -918,43 +998,74 @@ function drawCannoneLegacy(p, y) {
 
 //cannone vintage cicciotto
 function drawCannoneBang(p, y) {
-	// CANNA: cilindro inclinato con bordo arrotondato
-    const a = p.angle * Math.PI / 180;
-    const len = 6;
-    const dir = (p.x < W/2 ? 1 : -1);
-    const bx = p.x + Math.cos(a) * len * dir;
-    const by = y - Math.sin(a) * len;
+  //CANNA: cilindro inclinato con bordo arrotondato
+  const a = p.angle * Math.PI / 180;
+  const len = 6;
+  const dir = (p.x < W/2 ? 1 : -1);
+  const bx = p.x + Math.cos(a) * len * dir;
+  const by = y - Math.sin(a) * len;
+  const thickness = 8;
+  //supposta 2.0
+  ctx.save();
+  ctx.translate(p.x, y);
+  ctx.rotate(-a * dir);
+  ctx.strokeStyle = COLORS.darkGray;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, -thickness / 2);
+  ctx.lineTo(len * dir, -thickness / 2);
+  ctx.arc(len * dir, 0, thickness / 2, -Math.PI / 2, Math.PI / 2, dir < 0);
+  ctx.lineTo(0, thickness / 2);
+  ctx.arc(0, 0, thickness / 2, Math.PI / 2, -Math.PI / 2, dir < 0);
+  ctx.closePath();
+  
+  if(isParallax) {
+    //ombra interna gradiente
+    const grad = ctx.createLinearGradient(0, -thickness / 2, 0, thickness / 2);
+    grad.addColorStop(0, isBW ? COLORS.lightGray : p.lightColor);
+    grad.addColorStop(1, COLORS.darkGray);
+    ctx.fillStyle = grad;
+  } else {
+    //grigione
+    ctx.fillStyle = isBW ? COLORS.gray : p.color;
+  }
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();  
+  
+  //BASE: rettangoli uno sopra l'altro
+  ctx.fillStyle = COLORS.black;
+  ctx.fillRect(p.x - 4, y, 8, 2);  
+  ctx.fillRect(p.x - 5, y + 2, 10, 2);  
+  ctx.fillRect(p.x - 6, y + 4, 12, 2);  
+  //asse di rotazione
+  ctx.fillStyle = COLORS.darkGray;
+  ctx.fillRect(p.x - 2,y - 1, 4, 4);
+  ctx.fillStyle = COLORS.gray;
+  ctx.fillRect(p.x - 1,y, 2, 2);
+  
+  //ombra cannone
+  if(isParallax) drawShadow(p.x, y, 12)
+}
 
-    ctx.beginPath();
-    ctx.lineWidth = 8;
-    ctx.lineCap = "round";
-    ctx.moveTo(p.x, y);
-    ctx.lineTo(bx, by);
-    ctx.strokeStyle = COLORS.darkGray;
-    ctx.stroke();
-	ctx.lineWidth = 6;
-	ctx.lineCap = "round";
-    ctx.moveTo(p.x, y);
-    ctx.lineTo(bx, by);
-    ctx.strokeStyle = isBW ? COLORS.gray : p.color;
-    ctx.stroke();
-	
-	//BASE: rettangoli uno sopra l'altro
-    ctx.fillStyle = COLORS.black;
-    ctx.fillRect(p.x - 4, y, 8, 2);	
-	ctx.fillRect(p.x - 5, y + 2, 10, 2);	
-	ctx.fillRect(p.x - 6, y + 4, 12, 2);	
-	//asse di rotazione
-	ctx.fillStyle = COLORS.darkGray;
-	ctx.fillRect(p.x - 2,y - 1, 4, 4);
-	ctx.fillStyle = COLORS.gray;
-	ctx.fillRect(p.x - 1,y, 2, 2);
+function drawShadow(x, y, shadowRadius) {
+  ctx.save();
+  const shadowRadiusY = shadowRadius * 0.2;	//raggio sfumatura verticale, schiacciata!
+  const deltay = y + 4;		//spostato sotto di 4px
+  const shadowGrad = ctx.createRadialGradient(x + 4, deltay, 0, x + 4, deltay, shadowRadius);
+  shadowGrad.addColorStop(0, "rgba(0,0,0,0.33)"); // centro più scuro
+  shadowGrad.addColorStop(1, "rgba(0,0,0,0)");   // bordi trasparenti
+  ctx.fillStyle = shadowGrad;
+  ctx.beginPath();
+  ctx.ellipse(x, deltay, shadowRadius, shadowRadiusY, 0, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.restore();
 }
 
 //gorilla!
 function drawGorilla(p, y, arms = 3, scale = 0.5) {
     const S = (v) => v * scale;//scala
-	const x = p.x;
+  const x = p.x;
 
     ctx.save();
     ctx.translate(x, y);
@@ -963,10 +1074,10 @@ function drawGorilla(p, y, arms = 3, scale = 0.5) {
     ctx.lineWidth = 1;
 
     // --- HEAD ---
-	ctx.fillRect(S(-4), S(0), S(6.9), S(6)); // fronte + occhi
+  ctx.fillRect(S(-4), S(0), S(6.9), S(6)); // fronte + occhi
     ctx.fillRect(S(-5), S(2), S(9), S(2));   // mento
 
-	// Brow line
+  // Brow line
     ctx.beginPath();
     ctx.moveTo(S(-3), S(2));
     ctx.lineTo(S(2), S(2));
@@ -1061,46 +1172,49 @@ function drawWindFlag() {
   const rectHeight = 5;
 
   if(isBang) {
-	  if (wind >= 0) {
-	    //bandiera verso destra, parte alta
-		ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-		ctx.fillRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
-		ctx.strokeStyle = COLORS.darkGray;
-		ctx.strokeRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
-		// bandiera verso destra → punta rientrante verso l’asta
-		ctx.moveTo(flagX + 2, flagY - 12);                          // attacco asta (alto)
-		ctx.lineTo(flagX + 2 + rectWidth, flagY - 12);              // bordo alto
-		ctx.lineTo(flagX + 2 + rectWidth - 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
-		ctx.lineTo(flagX + 2 + rectWidth, flagY - 12 + rectHeight); // bordo basso
-		ctx.lineTo(flagX + 2, flagY - 12 + rectHeight);             // ritorno all’asta
-	  } else {
-	    //bandiera verso sinistra, parte alta
-	    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-		ctx.fillRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
-		ctx.strokeStyle = COLORS.darkGray;
-		ctx.strokeRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
-		// bandiera verso sinistra → punta rientrante verso l’asta
-		ctx.moveTo(flagX - 2, flagY - 12);                          // attacco asta (alto)
-		ctx.lineTo(flagX - 2 - rectWidth, flagY - 12);              // bordo alto
-		ctx.lineTo(flagX - 2 - rectWidth + 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
-		ctx.lineTo(flagX - 2 - rectWidth, flagY - 12 + rectHeight); // bordo basso
-		ctx.lineTo(flagX - 2, flagY - 12 + rectHeight);             // ritorno all’asta
-	  }
-	  ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-	  ctx.closePath();
-	  ctx.fill();
-	  ctx.stroke();
+    if (wind >= 0) {
+      //bandiera verso destra, parte alta
+    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+    ctx.fillRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
+    ctx.strokeStyle = COLORS.darkGray;
+    ctx.strokeRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
+    // bandiera verso destra → punta rientrante verso l’asta
+    ctx.moveTo(flagX + 2, flagY - 12);                          // attacco asta (alto)
+    ctx.lineTo(flagX + 2 + rectWidth, flagY - 12);              // bordo alto
+    ctx.lineTo(flagX + 2 + rectWidth - 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
+    ctx.lineTo(flagX + 2 + rectWidth, flagY - 12 + rectHeight); // bordo basso
+    ctx.lineTo(flagX + 2, flagY - 12 + rectHeight);             // ritorno all’asta
+    } else {
+      //bandiera verso sinistra, parte alta
+      ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+    ctx.fillRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
+    ctx.strokeStyle = COLORS.darkGray;
+    ctx.strokeRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
+    // bandiera verso sinistra → punta rientrante verso l’asta
+    ctx.moveTo(flagX - 2, flagY - 12);                          // attacco asta (alto)
+    ctx.lineTo(flagX - 2 - rectWidth, flagY - 12);              // bordo alto
+    ctx.lineTo(flagX - 2 - rectWidth + 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
+    ctx.lineTo(flagX - 2 - rectWidth, flagY - 12 + rectHeight); // bordo basso
+    ctx.lineTo(flagX - 2, flagY - 12 + rectHeight);             // ritorno all’asta
+    }
+    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
   } else {
-	  if (wind >= 0) {
-		//bandiera verso destra
-		ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-		ctx.fillRect(flagX, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
-	  } else {
-		//bandiera verso sinistra
-		ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-		ctx.fillRect(flagX - rectWidth, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
-	  }
+    if (wind >= 0) {
+    //bandiera verso destra
+    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+    ctx.fillRect(flagX, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
+    } else {
+    //bandiera verso sinistra
+    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+    ctx.fillRect(flagX - rectWidth, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
+    }
   }
+  
+  //ombra bandiera
+  if(isParallax && isBang) drawShadow(flagX, flagY - 2, 8)  
 }
 
 //disegna dati player
@@ -1108,8 +1222,8 @@ function drawHUD() {
   const p = players[currentPlayer];
   
   if(isGorilla) {
-	ctx.fillStyle = COLORS.darkBlue;
-	ctx.fillRect(0, H-11, W, H-1);
+  ctx.fillStyle = COLORS.darkBlue;
+  ctx.fillRect(0, H-11, W, H-1);
   }
   
   ctx.font = "10px monospace";
@@ -1134,27 +1248,26 @@ function drawHUD() {
   //messaggio
   if (message) {
     const tw = ctx.measureText(message).width;
-	if(isGorilla) {
-	  ctx.fillStyle = COLORS.darkBlue;
-	  ctx.fillRect((W-tw) / 2 - 2, H - 20, tw + 2, 11);
-	}
-	ctx.fillStyle = COLORS.white;
+  if(isGorilla) {
+    ctx.fillStyle = COLORS.darkBlue;
+    ctx.fillRect((W-tw) / 2 - 2, H - 20, tw + 2, 11);
+  }
+  ctx.fillStyle = COLORS.white;
     ctx.fillText(message, (W - tw)/2, H - 12);
   }
   
   //titolo dentro con bordi doppi
   if (isDistort) {
-	ctx.fillStyle = COLORS.white;//gray;
+    ctx.fillStyle = COLORS.white;//gray;
     const title = isGorilla ? titles.gorilla : isBang ? titles.bang : titles.default;
-	const tw = ctx.measureText(title).width;
+    const tw = ctx.measureText(title).width;
     ctx.fillText(title, (W - tw)/2, 14);
-	
-	ctx.strokeStyle = COLORS.white;
-	ctx.lineWidth = 3;
-	ctx.strokeRect(0, 0, W, H);
-	ctx.strokeStyle = COLORS.gray;
-	ctx.lineWidth = 1;
-	ctx.strokeRect(3, 3, W-3, H-3);
+    ctx.strokeStyle = COLORS.white;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(0, 0, W, H);
+    ctx.strokeStyle = COLORS.gray;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(3, 3, W-3, H-3);
   }
 }
 
@@ -1162,7 +1275,7 @@ function drawHUD() {
 
 //SUONI
 function playExplosionSound() {
-	if(isMute) return;
+  if(isMute) return;
     const now = audioCtx.currentTime;
 
     // 1. Crea un generatore di Rumore Bianco (Noise Buffer)
@@ -1170,7 +1283,7 @@ function playExplosionSound() {
     const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const output = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1; // Riempie il buffer con rumore casuale (statico)
+      output[i] = Math.random() * 2 - 1; // Riempie il buffer con rumore casuale (statico)
     }
 
     const noise = audioCtx.createBufferSource();
@@ -1201,7 +1314,7 @@ function playExplosionSound() {
 }
 
 function playShootSound() {
-	if(isMute) return;
+  if(isMute) return;
     // 1. Crea l'oscillatore (il "generatore di suono")
     const oscillator = audioCtx.createOscillator();
     // Usa un'onda quadra per un suono "pixelato" o un'onda a dente di sega (sawtooth)
@@ -1236,7 +1349,7 @@ function playShootSound() {
 }
 
 function playTankExplosionSound() {
-	if(isMute) return;
+  if(isMute) return;
     const now = audioCtx.currentTime;
     const duration = 0.5; // Durata maggiore per l'esplosione del carro armato
 
@@ -1294,26 +1407,38 @@ function playTankExplosionSound() {
 }
 
 function playBeep() {
-	if(isMute) return;
-	if(isGorilla) { playGorillaMelody(); return; }
-	const oscillator = audioCtx.createOscillator();
-	const gain = audioCtx.createGain();
+  if(isMute) return;
+  if(isGorilla) { playGorillaMelody(); return; }
+  const oscillator = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
 
-	oscillator.type = 'square'; // Apple II usava un'onda quadra
-	oscillator.frequency.setValueAtTime(935, audioCtx.currentTime);
-	gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  oscillator.type = 'square'; // Apple II usava un'onda quadra
+  oscillator.frequency.setValueAtTime(935, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
 
-	oscillator.connect(gain);
-	gain.connect(audioCtx.destination);
+  oscillator.connect(gain);
+  gain.connect(audioCtx.destination);
 
-	oscillator.start();
-	oscillator.stop(audioCtx.currentTime + 0.1); // durata 250 ms
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + 0.1); // durata 250 ms
 }
 
 //gorilla beep :-)
 const noteFreq = {
-  'C': 261.63, 'D': 293.66, 'E': 329.63,
-  'F': 349.23, 'G': 392.00, 'A': 440.00, 'B': 493.88
+  'c': 261.63 / 2, 
+  'd': 293.66 / 2, 
+  'e': 329.63 / 2,
+  'f': 349.23 / 2, 
+  'g': 392.00 / 2, 
+  'a': 440.00 / 2, 
+  'b': 493.88 / 2,
+  'C': 261.63, 
+  'D': 293.66, 
+  'E': 329.63,
+  'F': 349.23, 
+  'G': 392.00, 
+  'A': 440.00, 
+  'B': 493.88
 };
 
 function playTone(freq, duration, audioCtx, time) {
@@ -1329,21 +1454,23 @@ function playTone(freq, duration, audioCtx, time) {
   oscillator.stop(time + duration);
 }
 
+
 function playGorillaMelody(forceMelody = "", forceLen = "", forceNoteTime = 1/16) {
   if(isMute) return;
-  const melody   = forceMelody ? forceMelody : "EFGFEFG_CC";
-  const noteLen  = forceLen ? forceLen : "2222222224";
+  const melody   = forceMelody ? forceMelody : "CDEDCDECC";
+  const noteLen  = forceLen ?       forceLen : "222222444";
   const noteTime = forceNoteTime ? forceNoteTime : 1 / 16;
   
   let currentTime = audioCtx.currentTime;
 
   for (let i = 0; i < melody.length; i++) {
-	const note = melody[i];
-	const duration = noteTime * noteLen[i];
+  const note = melody[i];
+  const duration = noteTime * noteLen[i];
     if (noteFreq[note]) {
-      playTone(noteFreq[note]/3, duration, audioCtx, currentTime);
-	}
-	currentTime += duration;
+      playTone(noteFreq[note]/2, duration, audioCtx, currentTime);
+	  console.log(note+'='+noteFreq[note]/2);
+  }
+  currentTime += duration;
   }
 }
 
@@ -1359,27 +1486,21 @@ function playGorillaVictory() {
 
 //gestione scanlines on/off
 function changeScanLines() {
-	scanLinesEnabled = !scanLinesEnabled;
-	const btn = document.getElementById('scanlinesBtn');
-	
-	if (scanLinesEnabled) {
-		btn.classList.add('on');
-		document.getElementById('scanlines-overlay').style.display = 'block';
-	} else {
-		btn.classList.remove('on');
-		document.getElementById('scanlines-overlay').style.display = 'none';
-	}
+  scanLinesEnabled = !scanLinesEnabled;
+  const btn = document.getElementById('scanlinesBtn');
+  
+  if (scanLinesEnabled) {
+    btn.classList.add('on');
+    document.getElementById('scanlines-overlay').style.display = 'block';
+  } else {
+    btn.classList.remove('on');
+    document.getElementById('scanlines-overlay').style.display = 'none';
+  }
 }
 
 
 
 
-
-
-//fps per delfini curiosi e cavalli golosi...
-let lastTime = performance.now();
-let fps = 0;
-let isFps = false;
 
 // ------------------------------------------------
 // QUESTO E' IL GIOCO!
@@ -1390,12 +1511,13 @@ function loop(timeStamp) {
   
   //fps
   if(isFps) {
-	const delta = timeStamp - lastTime;
-	fps = Math.round(1000 / delta);
-	ctx.fillStyle = COLORS.white;
-	ctx.font = '10px monospace';
-	ctx.fillText(`FPS: ${fps}`, 2, 10);
-	lastTime = timeStamp;
+    const delta = timeStamp - lastTime;
+    fps = (1000 / delta) | 0;
+    if (fps < minFps && fps > 2) minFps = fps;
+    ctx.fillStyle = COLORS.white;
+    ctx.font = '10px monospace';
+    ctx.fillText(`FPS: ${fps} - min: ${minFps}`, 2, 10);
+    lastTime = timeStamp;
   }
   
   requestAnimationFrame(loop);
@@ -1405,130 +1527,131 @@ loop();
 
 
 
-//gestione mute sound on/off	
+//gestione mute sound on/off  
 function changeMute() {
-	isMute = !isMute;
-	const btn = document.getElementById('muteBtn');
+  isMute = !isMute;
+  const btn = document.getElementById('muteBtn');
 
-	if (isMute) btn.classList.add('on');
-	else btn.classList.remove('on');
+  if (isMute) btn.classList.add('on');
+  else btn.classList.remove('on');
 }
 
 //gestione P2 umano
 function changePlayer2Human() {
-	players[1].isAI = !(players[1].isAI);
-	const btn = document.getElementById('p2humanBtn');
-	
-	if(players[1].isAI) btn.classList.remove('on');
-	else btn.classList.add('on');
+  players[1].isAI = !(players[1].isAI);
+  const btn = document.getElementById('p2humanBtn');
+  
+  if(players[1].isAI) btn.classList.remove('on');
+  else btn.classList.add('on');
 }
 
 
 //gestione crt
 function changeCrt() {
-	currentCrt = (currentCrt+1) % 4;
-	const btn = document.getElementById('crtBtn');
-	const container = document.getElementById('container');
-	
-	if(currentCrt == 0) {
-		btn.classList.remove('on');
-		container.style.filter = '';
-	}
-	else if(currentCrt == 1) {
-		//fosfori arancioni
-		btn.classList.add('on');
-		container.style.filter = 'hue-rotate(280deg)';
-	}
-	else if(currentCrt == 2) {
-		//fosfori blu
-		btn.classList.add('on');
-		container.style.filter = 'hue-rotate(80deg)';
-	}
-	else {
-		//bianco e nero :(
-		btn.classList.add('on');
-		container.style.filter = 'grayscale(1)';
-	}
+  currentCrt = (currentCrt+1) % 4;
+  const btn = document.getElementById('crtBtn');
+  const container = document.getElementById('container');
+  
+  if(currentCrt == 0) {
+    btn.classList.remove('on');
+    container.style.filter = '';
+  }
+  else if(currentCrt == 1) {
+    //fosfori arancioni
+    btn.classList.add('on');
+    container.style.filter = 'hue-rotate(280deg)';
+  }
+  else if(currentCrt == 2) {
+    //fosfori blu
+    btn.classList.add('on');
+    container.style.filter = 'hue-rotate(80deg)';
+  }
+  else {
+    //bianco e nero :(
+    btn.classList.add('on');
+    container.style.filter = 'grayscale(1)';
+  }
 }
 
 
 //gestione hantarex
 function changeHantarex() {
     isHantarex = !isHantarex;
-	const btn = document.getElementById('hantarexBtn');
-	const monitor = document.getElementById('monitor');
-	const container = document.getElementById('container');
-	
-	if (isHantarex) {
-		btn.classList.add('on');
-		monitor.classList.add('hantarex');
-		container.classList.add('hantarex');
-	}
-	else {
-		btn.classList.remove('on');
-		monitor.classList.remove('hantarex');
-		container.classList.remove('hantarex');
-	}
+  const btn = document.getElementById('hantarexBtn');
+  const monitor = document.getElementById('monitor');
+  const container = document.getElementById('container');
+  
+  if (isHantarex) {
+    btn.classList.add('on');
+    monitor.classList.add('hantarex');
+    container.classList.add('hantarex');
+  }
+  else {
+    btn.classList.remove('on');
+    monitor.classList.remove('hantarex');
+    container.classList.remove('hantarex');
+  }
 }
 
 
 //gestione bw
 function changeBW() {
-	isBW = !isBW;
-	const btn = document.getElementById('bwBtn');
-	
-	if (isBW) {
-		btn.classList.add('on');
-	}
-	else {
-		btn.classList.remove('on');
-	}
+  isBW = !isBW;
+  const btn = document.getElementById('bwBtn');
+  
+  if (isBW) {
+    btn.classList.add('on');
+  }
+  else {
+    btn.classList.remove('on');
+  }
 }
 
 
 //gestione distort
 function changeDistort() {
-	isDistort = !isDistort;
-	const btn = document.getElementById('distortBtn');
-	const title = document.getElementById('title');
-	const game = document.getElementById('game');
-	
-	if (isDistort) {
-		btn.classList.add('on');
-		title.style.display = 'none';
-		game.style.border = 'none';
-	}
-	else {
-		btn.classList.remove('on');
-		title.style.display = 'block';
-		game.style.border = '4px solid #fff';
-	}
+  isDistort = !isDistort;
+  const btn = document.getElementById('distortBtn');
+  const title = document.getElementById('title');
+  const game = document.getElementById('game');
+  
+  if (isDistort) {
+    btn.classList.add('on');
+    title.style.display = 'none';
+    game.style.border = 'none';
+  }
+  else {
+    btn.classList.remove('on');
+    title.style.display = 'block';
+    game.style.border = '4px solid #fff';
+  }
 }
 
 //gestione fps
 function changeFps() {
-	isFps = !isFps;
-	const btn = document.getElementById('fpsBtn');
-	
-	if (isFps) {
-		btn.classList.add('on');
-	}
-	else {
-		btn.classList.remove('on');
-	}
+  isFps = !isFps;
+  const btn = document.getElementById('fpsBtn');
+  
+  if (isFps) {
+	minFps = 9999;
+    btn.classList.add('on');
+  }
+  else {
+    btn.classList.remove('on');
+  }
 }
 
 //gestione parallax
 function changeParallax() {
-	isParallax = !isParallax;
-	const btn = document.getElementById('parallaxBtn');
-	
-	if (isParallax) {
-		btn.classList.add('on');
-	}
-	else {
-		btn.classList.remove('on');
-	}
+  isParallax = !isParallax;
+  const btn = document.getElementById('parallaxBtn');
+  
+  if (isParallax) {
+    btn.classList.add('on');
+  }
+  else {
+    btn.classList.remove('on');
+  }
 }
 
 // ------------------------------------------------
@@ -1539,17 +1662,17 @@ window.addEventListener('keydown', e => {
   
   //alcuni devono funzionare sempre
   switch(keyLC) {
-	case ' ' : e.preventDefault(); break;
-	case 's' : changeScanLines(); break;
-	case 'm' : changeMute(); break;
-	case 'c' : changeCrt(); break;
-	case 'x' : changeHantarex(); break;
-	case 'w' : changeBW(); break;
-	case 'd' : changeDistort(); break;
-	case 'b' : changeBang(); break;
-	case 'g' : changeGorilla(); break;
-	case 'f' : changeFps(); break;
-	case 'l' : changeParallax(); break;
+    case ' ' : e.preventDefault(); break;
+    case 's' : changeScanLines(); break;
+    case 'm' : changeMute(); break;
+    case 'c' : changeCrt(); break;
+    case 'x' : changeHantarex(); break;
+    case 'w' : changeBW(); break;
+    case 'd' : changeDistort(); break;
+    case 'b' : changeBang(); break;
+    case 'g' : changeGorilla(); break;
+    case 'f' : changeFps(); break;
+    case 'l' : changeParallax(); break;
   }
   
   //altri devono funzionare solo quando tocca all'umano
@@ -1569,15 +1692,15 @@ window.addEventListener('keydown', e => {
 //popup orrenda angolo
 function enterAngle() {
     let aa = prompt('ENTER ANGLE (0-180)');
-	const value = parseInt(aa);
+  const value = parseInt(aa);
     const p = players[currentPlayer];
     p.angle = Math.max(0, Math.min(180, value)) | 0;
 }
 
 //popup orrenda potenza
 function enterPower() {
-	let pp = prompt('ENTER POWER (0-100)');
-	const value = parseInt(pp);
+  let pp = prompt('ENTER POWER (0-100)');
+  const value = parseInt(pp);
     const p = players[currentPlayer];
     p.power = Math.max(5, Math.min(100, value)) | 0;
 }
@@ -1592,8 +1715,8 @@ canvas.addEventListener('click', ()=> {
 
 //doppio click = fullscreen
 document.getElementById('controls-label').addEventListener('dblclick', () => {
-	if(document.fullscreenElement) document.exitFullscreen();
-	else document.documentElement.requestFullscreen();
+  if(document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen();
 });
 
 //gestione touch controls
@@ -1605,16 +1728,16 @@ document.getElementById('touch-controls').addEventListener('click', e => {
   const p = players[currentPlayer];
 
   switch (act) {
-  	case 'mute': changeMute(); break;
-	case 'scanlines': changeScanLines(); break;
+    case 'mute': changeMute(); break;
+    case 'scanlines': changeScanLines(); break;
     case 'crt': changeCrt(); break;
-	case 'hantarex': changeHantarex(); break;
-	case 'bw': changeBW(); break;
-	case 'distort': changeDistort(); break;
-	case 'bang': changeBang(); break;
-	case 'gorilla': changeGorilla(); break;
-	case 'parallax': changeParallax(); break;
-	case 'fps': changeFps(); break;
+    case 'hantarex': changeHantarex(); break;
+    case 'bw': changeBW(); break;
+    case 'distort': changeDistort(); break;
+    case 'bang': changeBang(); break;
+    case 'gorilla': changeGorilla(); break;
+    case 'parallax': changeParallax(); break;
+    case 'fps': changeFps(); break;
   }
   
   //altri devono funzionare solo quando tocca all'umano
@@ -1628,9 +1751,9 @@ document.getElementById('touch-controls').addEventListener('click', e => {
     case 'power-down': p.power = Math.max(5, p.power - 5); break;
     case 'fire': launch(p); break;
     case 'reset': reset(); playBeep(); break;
-	case 'p2human': changePlayer2Human(); break;
-	case 'power': enterPower(); break;
-	case 'angle': enterAngle(); break;
+    case 'p2human': changePlayer2Human(); break;
+    case 'power': enterPower(); break;
+    case 'angle': enterAngle(); break;
   }
   
   btn.blur();
@@ -1667,45 +1790,44 @@ function distort() {
 
 //gorilla.bas
 function changeGorilla() {
-	isGorilla = !isGorilla;
-	const btn = document.getElementById('gorillaBtn');
-	const game = document.getElementById('game');
-	const title = document.getElementById('title');
-	
-	if (isGorilla) {
-	    reset();
-		playBeep();
-		btn.classList.add('on');
-		game.style.filter = 'contrast(1.3) saturate(1.3)';
-		title.innerHTML = titles.gorilla;
-	}
-	else {
-		reset();
-		playBeep();
-		btn.classList.remove('on');
-		game.style.filter = '';
-		title.innerHTML = isBang ? titles.bang : titles.default;
-	}
+  isGorilla = !isGorilla;
+  const btn = document.getElementById('gorillaBtn');
+  const game = document.getElementById('game');
+  const title = document.getElementById('title');
+  
+  if (isGorilla) {
+    reset();
+    playBeep();
+    btn.classList.add('on');
+    game.style.filter = 'contrast(1.3) saturate(1.3)';
+    title.innerHTML = titles.gorilla;
+  } else {
+    reset();
+    playBeep();
+    btn.classList.remove('on');
+    game.style.filter = '';
+    title.innerHTML = isBang ? titles.bang : titles.default;
+  }
 }
 
 
 //bang!
 function changeBang() {
-	isBang = !isBang;
-	const btn = document.getElementById('bangBtn');
-	const game = document.getElementById('game');
-	const title = document.getElementById('title');
-	
-	if (isBang) {
-		btn.classList.add('on');
-		game.style.filter = 'contrast(1.3) saturate(1.3)';
-		title.innerHTML = titles.bang;
-	}
-	else {
-		btn.classList.remove('on');
-		game.style.filter = '';
-		title.innerHTML = isGorilla ? titles.gorilla : titles.default;
-	}
+  isBang = !isBang;
+  const btn = document.getElementById('bangBtn');
+  const game = document.getElementById('game');
+  const title = document.getElementById('title');
+  
+  if (isBang) {
+    btn.classList.add('on');
+    game.style.filter = 'contrast(1.3) saturate(1.3)';
+    title.innerHTML = titles.bang;
+  }
+  else {
+    btn.classList.remove('on');
+    game.style.filter = '';
+    title.innerHTML = isGorilla ? titles.gorilla : titles.default;
+  }
 }
 
 function drawCloud(x, y, scale = 0.5, cloudType = 3) {
@@ -1714,33 +1836,39 @@ function drawCloud(x, y, scale = 0.5, cloudType = 3) {
   ctx.moveTo(x, y);
   
   switch(cloudType) {
-	case 1 : 
-	  ctx.bezierCurveTo(x - 10 * scale, y - 10 * scale, x + 10 * scale, y - 25 * scale, x + 30 * scale, y - 10 * scale);
-	  ctx.bezierCurveTo(x + 45 * scale, y - 25 * scale, x + 70 * scale, y - 15 * scale, x + 60 * scale, y);
-	  ctx.bezierCurveTo(x + 80 * scale, y + 5 * scale, x + 50 * scale, y + 15 * scale, x + 25 * scale, y + 10 * scale);
-	  ctx.bezierCurveTo(x + 10 * scale, y + 15 * scale, x - 5 * scale, y + 10 * scale, x, y);
-	  break;
-	  
-	case 2 :
-	  ctx.bezierCurveTo(x + 10 * scale, y - 20 * scale, x + 40 * scale, y - 25 * scale, x + 50 * scale, y - 10 * scale);
-	  ctx.bezierCurveTo(x + 65 * scale, y - 30 * scale, x + 100 * scale, y - 20 * scale, x + 90 * scale, y);
-	  ctx.bezierCurveTo(x + 110 * scale, y - 5 * scale, x + 120 * scale, y + 10 * scale, x + 100 * scale, y + 15 * scale);
-      ctx.bezierCurveTo(x + 80 * scale, y + 20 * scale, x + 40 * scale, y + 15 * scale, x + 20 * scale, y + 10 * scale);
-      ctx.bezierCurveTo(x + 5 * scale, y + 15 * scale, x - 5 * scale, y + 5 * scale, x, y);
-	  break;
+  case 1 : 
+    ctx.bezierCurveTo(x - 10 * scale, y - 10 * scale, x + 10 * scale, y - 25 * scale, x + 30 * scale, y - 10 * scale);
+    ctx.bezierCurveTo(x + 45 * scale, y - 25 * scale, x + 70 * scale, y - 15 * scale, x + 60 * scale, y);
+    ctx.bezierCurveTo(x + 80 * scale, y + 5 * scale, x + 50 * scale, y + 15 * scale, x + 25 * scale, y + 10 * scale);
+    ctx.bezierCurveTo(x + 10 * scale, y + 15 * scale, x - 5 * scale, y + 10 * scale, x, y);
+    break;
     
-	case 3 : 
-      ctx.bezierCurveTo(x + 10 * scale, y - 15 * scale, x + 35 * scale, y - 25 * scale, x + 45 * scale, y - 10 * scale);
-	  ctx.bezierCurveTo(x + 55 * scale, y - 30 * scale, x + 85 * scale, y - 20 * scale, x + 75 * scale, y);
-	  ctx.bezierCurveTo(x + 95 * scale, y - 5 * scale, x + 105 * scale, y + 15 * scale, x + 90 * scale, y + 20 * scale);
-	  ctx.bezierCurveTo(x + 70 * scale, y + 25 * scale, x + 40 * scale, y + 20 * scale, x + 20 * scale, y + 15 * scale);
-	  ctx.bezierCurveTo(x + 5 * scale, y + 20 * scale, x - 5 * scale, y + 10 * scale, x, y);
-      break;
+  case 2 :
+    ctx.bezierCurveTo(x + 10 * scale, y - 20 * scale, x + 40 * scale, y - 25 * scale, x + 50 * scale, y - 10 * scale);
+    ctx.bezierCurveTo(x + 65 * scale, y - 30 * scale, x + 100 * scale, y - 20 * scale, x + 90 * scale, y);
+    ctx.bezierCurveTo(x + 110 * scale, y - 5 * scale, x + 120 * scale, y + 10 * scale, x + 100 * scale, y + 15 * scale);
+    ctx.bezierCurveTo(x + 80 * scale, y + 20 * scale, x + 40 * scale, y + 15 * scale, x + 20 * scale, y + 10 * scale);
+    ctx.bezierCurveTo(x + 5 * scale, y + 15 * scale, x - 5 * scale, y + 5 * scale, x, y);
+    break;
+    
+  case 3 : 
+    ctx.bezierCurveTo(x + 10 * scale, y - 15 * scale, x + 35 * scale, y - 25 * scale, x + 45 * scale, y - 10 * scale);
+    ctx.bezierCurveTo(x + 55 * scale, y - 30 * scale, x + 85 * scale, y - 20 * scale, x + 75 * scale, y);
+    ctx.bezierCurveTo(x + 95 * scale, y - 5 * scale, x + 105 * scale, y + 15 * scale, x + 90 * scale, y + 20 * scale);
+    ctx.bezierCurveTo(x + 70 * scale, y + 25 * scale, x + 40 * scale, y + 20 * scale, x + 20 * scale, y + 15 * scale);
+    ctx.bezierCurveTo(x + 5 * scale, y + 20 * scale, x - 5 * scale, y + 10 * scale, x, y);
+    break;
   }
   
   ctx.closePath();
-
-  ctx.fillStyle = COLORS.white;
+  if(isParallax) {
+    const gradient = ctx.createLinearGradient(x-5*scale, y-30*scale, x+110*scale, y+20*scale);
+    gradient.addColorStop(0, COLORS.lightGray);
+    gradient.addColorStop(1, COLORS.white);
+    ctx.fillStyle = gradient;
+  } else {
+	ctx.fillStyle = COLORS.white;
+  }
   ctx.strokeStyle = COLORS.gray;
   ctx.lineWidth = scale * 2;
   ctx.fill();
@@ -1750,7 +1878,14 @@ function drawCloud(x, y, scale = 0.5, cloudType = 3) {
 
 function drawSun(x, y, radius = 10, ooo = false, rays = 8) {
   //disco giallo
-  ctx.fillStyle = COLORS.yellow;
+  if(isParallax) {
+    const gradient = ctx.createLinearGradient(x-radius, y-radius, x+radius, y+radius);
+    gradient.addColorStop(0, COLORS.lightYellow);
+    gradient.addColorStop(1, COLORS.lightOrange);
+    ctx.fillStyle = gradient;
+  } else {
+	ctx.fillStyle = COLORS.yellow;
+  }
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fill();
@@ -1810,7 +1945,14 @@ function drawSunFace(x, y, radius = 10, ooo = false) {
 
 function drawMoon(x, y, radius = 10) {
   //disco chiaro
-  ctx.fillStyle = COLORS.yellow;
+  if(isParallax) {
+    const gradient = ctx.createLinearGradient(x-radius, y-radius, x+radius, y+radius);
+    gradient.addColorStop(0, COLORS.lightYellow);
+    gradient.addColorStop(1, COLORS.lightOrange);
+    ctx.fillStyle = gradient;
+  } else {
+	ctx.fillStyle = COLORS.yellow;
+  }
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fill();
