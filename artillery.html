@@ -921,7 +921,7 @@ function drawTerrainGorilla() {
       if (!(windowKey in windowMap) || Math.random() < 0.00001) {
         let accesa = Math.random();
         windowMap[windowKey] =  accesa < 0.1 ? COLORS.white : 
-                                accesa < 0.5 ? COLORS.yellow : 
+                                accesa < 0.5 ? COLORS.lightYellow : 
                                 accesa < 0.9 ? COLORS.black : 
                                 COLORS.darkGray;
       }
@@ -1174,28 +1174,28 @@ function drawWindFlag() {
   if(isBang) {
     if (wind >= 0) {
       //bandiera verso destra, parte alta
-    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-    ctx.fillRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
-    ctx.strokeStyle = COLORS.darkGray;
-    ctx.strokeRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
-    // bandiera verso destra → punta rientrante verso l’asta
-    ctx.moveTo(flagX + 2, flagY - 12);                          // attacco asta (alto)
-    ctx.lineTo(flagX + 2 + rectWidth, flagY - 12);              // bordo alto
-    ctx.lineTo(flagX + 2 + rectWidth - 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
-    ctx.lineTo(flagX + 2 + rectWidth, flagY - 12 + rectHeight); // bordo basso
-    ctx.lineTo(flagX + 2, flagY - 12 + rectHeight);             // ritorno all’asta
+      ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+      ctx.fillRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
+      ctx.strokeStyle = COLORS.darkGray;
+      ctx.strokeRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
+      // bandiera verso destra → punta rientrante verso l’asta
+      ctx.moveTo(flagX + 2, flagY - 12);                          // attacco asta (alto)
+      ctx.lineTo(flagX + 2 + rectWidth, flagY - 12);              // bordo alto
+      ctx.lineTo(flagX + 2 + rectWidth - 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
+      ctx.lineTo(flagX + 2 + rectWidth, flagY - 12 + rectHeight); // bordo basso
+      ctx.lineTo(flagX + 2, flagY - 12 + rectHeight);             // ritorno all’asta
     } else {
       //bandiera verso sinistra, parte alta
       ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-    ctx.fillRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
-    ctx.strokeStyle = COLORS.darkGray;
-    ctx.strokeRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
-    // bandiera verso sinistra → punta rientrante verso l’asta
-    ctx.moveTo(flagX - 2, flagY - 12);                          // attacco asta (alto)
-    ctx.lineTo(flagX - 2 - rectWidth, flagY - 12);              // bordo alto
-    ctx.lineTo(flagX - 2 - rectWidth + 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
-    ctx.lineTo(flagX - 2 - rectWidth, flagY - 12 + rectHeight); // bordo basso
-    ctx.lineTo(flagX - 2, flagY - 12 + rectHeight);             // ritorno all’asta
+      ctx.fillRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
+      ctx.strokeStyle = COLORS.darkGray;
+      ctx.strokeRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
+      // bandiera verso sinistra → punta rientrante verso l’asta
+      ctx.moveTo(flagX - 2, flagY - 12);                          // attacco asta (alto)
+      ctx.lineTo(flagX - 2 - rectWidth, flagY - 12);              // bordo alto
+      ctx.lineTo(flagX - 2 - rectWidth + 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
+      ctx.lineTo(flagX - 2 - rectWidth, flagY - 12 + rectHeight); // bordo basso
+      ctx.lineTo(flagX - 2, flagY - 12 + rectHeight);             // ritorno all’asta
     }
     ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
     ctx.closePath();
@@ -1203,13 +1203,13 @@ function drawWindFlag() {
     ctx.stroke();
   } else {
     if (wind >= 0) {
-    //bandiera verso destra
-    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-    ctx.fillRect(flagX, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
+      //bandiera verso destra
+      ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+      ctx.fillRect(flagX, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
     } else {
-    //bandiera verso sinistra
-    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-    ctx.fillRect(flagX - rectWidth, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
+      //bandiera verso sinistra
+      ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+      ctx.fillRect(flagX - rectWidth, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
     }
   }
   
