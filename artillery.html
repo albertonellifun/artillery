@@ -735,14 +735,6 @@ function draw() {
 
 //disegna palla da cannone
 function drawProjectileBang(projectile) {
-  if(isParallax) {
-    const gradient = ctx.createLinearGradient(projectile.x - 3, projectile.y - 3, 6, 6);
-    gradient.addColorStop(0, isBW ? COLORS.gray : projectile.owner.color);
-    gradient.addColorStop(1, COLORS.darkGray);
-    ctx.fillStyle = gradient;
-  } else {    
-    ctx.fillStyle = isBW ? COLORS.gray : projectile.owner.color;
-  }
   ctx.fillStyle = isBW ? COLORS.gray : projectile.owner.color;
   ctx.strokeStyle = COLORS.darkGray;
   ctx.beginPath();
@@ -791,7 +783,7 @@ function drawProjectileBanana(projectile) {
 
 //disegna terreno
 function drawTerrain() {
-  for (let x=0;x<W;x++){
+  for (let x=0; x<W; x++){
     const h = terrain[x];
   
     if(isBW) {
@@ -838,7 +830,7 @@ function drawTerrain() {
 
 //disegna terreno bang
 function drawTerrainBang() {
-  for (let x=0;x<W;x++){
+  for (let x=0; x<W; x++){
     const h = terrain[x];
     
     if(isParallax) {
@@ -1015,7 +1007,7 @@ function drawCannoneBang(p, y) {
   const bx = p.x + Math.cos(a) * len * dir;
   const by = y - Math.sin(a) * len;
   const thickness = 8;
-  //supposta 2.0
+  
   ctx.save();
   ctx.translate(p.x, y);
   ctx.rotate(-a * dir);
@@ -1024,8 +1016,8 @@ function drawCannoneBang(p, y) {
   ctx.beginPath();
   ctx.moveTo(0, -thickness / 2);
   ctx.lineTo(len * dir, -thickness / 2);
-  //ctx.arc(len * dir, 0, thickness / 2, -Math.PI / 2, Math.PI / 2, dir < 0);//punta tonda
-  ctx.lineTo(len * dir, thickness / 2);//punta piatta
+  //ctx.arc(len * dir, 0, thickness / 2, -Math.PI / 2, Math.PI / 2, dir < 0);//punta tonda a supposta
+  ctx.lineTo(len * dir, thickness / 2);//punta piatta come su bang
   ctx.lineTo(0, thickness / 2);
   ctx.arc(0, 0, thickness / 2, Math.PI / 2, -Math.PI / 2, dir < 0);
   ctx.closePath();
@@ -1227,12 +1219,36 @@ function drawWindFlag() {
   } else {
     if (wind >= 0) {
       //bandiera verso destra
-      ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-      ctx.fillRect(flagX, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
+	  if(isGorilla) {
+	    ctx.strokeStyle = COLORS.white;
+	    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+	    ctx.beginPath();
+        ctx.moveTo(flagX, flagY - 18);              // punto A (lato asta, in alto)
+        ctx.lineTo(flagX, flagY - 18 + rectHeight); // punto B (lato asta, in basso)
+        ctx.lineTo(flagX + rectWidth * 1.25, flagY - 18 + rectHeight / 2); // punto C (punta)
+        ctx.closePath();
+        ctx.fill();
+		ctx.stroke();
+      } else {
+	    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+        ctx.fillRect(flagX, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
+      }
     } else {
       //bandiera verso sinistra
-      ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
-      ctx.fillRect(flagX - rectWidth, flagY - (isGorilla ? 18 : 12), rectWidth, rectHeight);
+      if(isGorilla) {
+	    ctx.strokeStyle = COLORS.white;
+	    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+        ctx.beginPath();
+        ctx.moveTo(flagX, flagY - 18);               // punto A
+        ctx.lineTo(flagX, flagY - 18 + rectHeight);  // punto B
+        ctx.lineTo(flagX - rectWidth * 1.25, flagY - 18 + rectHeight / 2); // punto C (punta a sinistra)
+        ctx.closePath();
+        ctx.fill();
+		ctx.stroke();
+	  } else {
+	    ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
+	    ctx.fillRect(flagX - rectWidth, flagY - 12, rectWidth, rectHeight);
+      }
     }
   }
   
