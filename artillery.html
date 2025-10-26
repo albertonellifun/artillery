@@ -213,7 +213,7 @@ const COLORS = {
   green: '#0A0', darkGreen: '#080',
   cyan: '#8CF', darkCyan: '#6AD',
   purple: '#C8F', darkPurple: '#A6D',
-  yellow: '#FF8', darkYellow: '#DD6',
+  yellow: '#FF8', darkYellow: '#BB4',
   orange: '#F80', darkOrange: '#D60',
   red: '#A00', darkRed: '#800',
   blue: '#00A', darkBlue: '#008',
@@ -735,10 +735,10 @@ function draw() {
 
 //disegna palla da cannone
 function drawProjectileBang(projectile) {
-  ctx.fillStyle = isBW ? COLORS.gray : projectile.owner.color;
-  ctx.strokeStyle = COLORS.darkGray;
   ctx.beginPath();
   ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
+  ctx.fillStyle = isBW ? COLORS.gray : projectile.owner.color;
+  ctx.strokeStyle = COLORS.darkGray;
   ctx.fill();
   ctx.stroke();
 }
@@ -767,13 +767,13 @@ function drawProjectileBanana(projectile) {
   ctx.translate(projectile.x, projectile.y);
   ctx.rotate(angle);
   ctx.beginPath();
-  ctx.strokeStyle = COLORS.yellow;
   ctx.lineWidth = 0.5;
+  ctx.strokeStyle = COLORS.yellow;
+  ctx.fillStyle = COLORS.lightOrange;
   ctx.moveTo(-length/2, -thickness);
   ctx.quadraticCurveTo(0, -length, length/2, -thickness);
   ctx.quadraticCurveTo(0, -length/2, -length/2, -thickness);
-  ctx.closePath();
-  ctx.fillStyle = COLORS.lightOrange;
+  ctx.closePath();  
   ctx.fill();
   ctx.stroke();
   ctx.restore();
@@ -783,40 +783,34 @@ function drawProjectileBanana(projectile) {
 
 //disegna terreno
 function drawTerrain() {
+  //fuori dal ciclo per la pesantezza
+  const darkColor = isBW ? COLORS.darkGreen : terrainColors[currentTerrainColorDark];
+  const lightColor = isBW ? COLORS.green : terrainColors[currentTerrainColor];
+  const darkestColor = isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark];
+
+  const terrainGradient = ctx.createLinearGradient(0, 0, 0, H);
+  terrainGradient.addColorStop(0, lightColor);
+  terrainGradient.addColorStop(1, darkestColor);
+  
   for (let x=0; x<W; x++){
     const h = terrain[x];
-  
-    if(isBW) {
-      if(isParallax) {
-        const gradient = ctx.createLinearGradient(x, 0, x, H);
-        gradient.addColorStop(0, COLORS.green);
-        gradient.addColorStop(1, COLORS.darkestGreen);
-        ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? gradient : COLORS.darkestGreen;
-      } else {    
-        ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? COLORS.green : COLORS.darkGreen;
-      }
-    }
-    else {
-      if(isParallax) {
-        const gradient = ctx.createLinearGradient(x, 0, x, H);
-        gradient.addColorStop(0, terrainColors[currentTerrainColor]);
-        gradient.addColorStop(1, terrainColors[currentTerrainColorDark]);
-        ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? gradient : terrainColors[currentTerrainColorDark];
-      } else {
-        ctx.fillStyle = (x % 2 === 0 || scanLinesEnabled) ? terrainColors[currentTerrainColor] : terrainColors[currentTerrainColorDark];
-      }
-    }
+	const useAltColor = (x % 2 === 0 || scanLinesEnabled);
     
+	if (isParallax) {
+      ctx.fillStyle = useAltColor ? terrainGradient : darkestColor;
+    } else {
+      ctx.fillStyle = useAltColor ? lightColor : darkColor;
+    }
+	
     ctx.fillRect(x, H - h, 1, h);
     
-    if(isParallax && x > 0 && ( terrain[x] <= terrain[x-1] || Math.abs(terrain[x] - terrain[x-1]) > 2)) {
+	//disegna parallasse solo se il terreno dopo e' piu' basso!
+    if(isParallax && x < W - 1 && terrain[x]>terrain[x+1]){
       const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
       gradient.addColorStop(0, isBang ? COLORS.darkestGreen : isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
       gradient.addColorStop(1, isBang ? COLORS.green : isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
       ctx.fillStyle = gradient;
-      //rettangolare
-      //ctx.fillRect(x + 1, H - h, 15, h);
-	  //trapezio
+      //trapezio
       ctx.beginPath();
       ctx.moveTo(x + 1, H - h);          // vertice sinistro alto
       ctx.lineTo(x + 1 + 20, H - h + 10); // vertice destro alto (più in su di 10px)
@@ -830,27 +824,28 @@ function drawTerrain() {
 
 //disegna terreno bang
 function drawTerrainBang() {
+  //fuori dal ciclo per la pesantezza
+  let terrainGradient = COLORS.green;
+  if(isParallax) {
+    //sfumatura terreno
+    const gradient = ctx.createLinearGradient(0, 0, 0, H);
+    gradient.addColorStop(0, COLORS.lightGreen);
+    gradient.addColorStop(1, COLORS.darkestGreen);
+    terrainGradient = gradient;
+  }  
+    
   for (let x=0; x<W; x++){
     const h = terrain[x];
     
-    if(isParallax) {
-	  //sfumatura terreno
-      const gradient = ctx.createLinearGradient(x, 0, x, H);
-      gradient.addColorStop(0, COLORS.lightGreen);
-	  gradient.addColorStop(1, COLORS.darkestGreen);
-      ctx.fillStyle = gradient;
-    } else {
-      ctx.fillStyle = COLORS.green;
-    }
-    
+    ctx.fillStyle = terrainGradient;
     ctx.fillRect(x, H - h, 1, h);
-	
-    
+	    
     //bordo scuro
     ctx.fillStyle = isParallax ? COLORS.darkestGreen : COLORS.darkGreen;
     ctx.fillRect(x, H - h, 1, 1);
     
-    if(isParallax && x > 0 && ( terrain[x] <= terrain[x-1] || Math.abs(terrain[x] - terrain[x-1]) > 2)) {
+	//disegna parallasse solo se il terreno dopo e' piu' basso!
+    if(isParallax && x > 0 && x < W - 1 && terrain[x]>terrain[x+1]){
       const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
       gradient.addColorStop(0, isBang ? COLORS.darkestGreen : isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
       gradient.addColorStop(1, isBang ? COLORS.green : isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
@@ -880,13 +875,18 @@ function drawTerrainGorilla() {
 	ctx.fillStyle = terrainColors[palazzoColor];
     ctx.fillRect(x, H - h, 1, h);
 	
-    if(isParallax && (x%40 == 39 || (x > 0 && (terrain[x] <= terrain[x-1] || Math.abs(terrain[x] - terrain[x-1]) > 13)))) {
+	//bordo scuro
+	ctx.fillStyle = terrainColors[palazzoColor+1];
+    ctx.fillRect(x, H - h, 1, 0.5);
+	
+	//disegna parallasse solo se il terreno dopo e' piu' basso!
+	if(isParallax && (x < W-1 && terrain[x]>terrain[x+1]) ) {
 	  const gradient = ctx.createLinearGradient(x + 1, H - h, x + 20, H);
       gradient.addColorStop(0, terrainColors[palazzoColor]);
       gradient.addColorStop(0.25, terrainColors[palazzoColor + 1]);
       gradient.addColorStop(1, COLORS.lightBlue);
       ctx.fillStyle = gradient;
-      //trapezio
+	  //trapezio
       ctx.beginPath();
       ctx.moveTo(x + 1, H - h);       // vertice sinistro alto
       ctx.lineTo(x + 20, H - h + 10); // vertice destro alto (più in su di 10px)
@@ -1036,6 +1036,7 @@ function drawCannoneBang(p, y) {
   ctx.stroke();
   ctx.restore();  
   
+  
   //BASE: rettangoli uno sopra l'altro
   ctx.fillStyle = COLORS.black;
   ctx.fillRect(p.x - 4, y, 8, 2);  
@@ -1054,7 +1055,6 @@ function drawCannoneBang(p, y) {
 }
 
 function drawShadow(x, y, shadowRadius) {
-  ctx.save();
   const shadowRadiusY = shadowRadius * 0.2;	//raggio sfumatura verticale, schiacciata!
   const deltay = y + 4;		//spostato sotto di 4px
   const shadowGrad = ctx.createRadialGradient(x + 4, deltay, 0, x + 4, deltay, shadowRadius);
@@ -1064,7 +1064,6 @@ function drawShadow(x, y, shadowRadius) {
   ctx.beginPath();
   ctx.ellipse(x, deltay, shadowRadius, shadowRadiusY, 0, 0, 2 * Math.PI);
   ctx.fill();
-  ctx.restore();
 }
 
 //gorilla!
@@ -1261,8 +1260,8 @@ function drawHUD() {
   const p = players[currentPlayer];
   
   if(isGorilla) {
-  ctx.fillStyle = COLORS.darkBlue;
-  ctx.fillRect(0, H-11, W, H-1);
+    ctx.fillStyle = COLORS.darkBlue;
+    ctx.fillRect(0, H-11, W, H-1);
   }
   
   ctx.font = "10px monospace";
@@ -1287,11 +1286,11 @@ function drawHUD() {
   //messaggio
   if (message) {
     const tw = ctx.measureText(message).width;
-  if(isGorilla) {
-    ctx.fillStyle = COLORS.darkBlue;
-    ctx.fillRect((W-tw) / 2 - 2, H - 20, tw + 2, 11);
-  }
-  ctx.fillStyle = COLORS.white;
+    if(isGorilla) {
+      ctx.fillStyle = COLORS.darkBlue;
+      ctx.fillRect((W-tw) / 2 - 2, H - 20, tw + 2, 11);
+    }
+    ctx.fillStyle = COLORS.white;
     ctx.fillText(message, (W - tw)/2, H - 12);
   }
   
@@ -1507,7 +1506,6 @@ function playGorillaMelody(forceMelody = "", forceLen = "", forceNoteTime = 1/16
   const duration = noteTime * noteLen[i];
     if (noteFreq[note]) {
       playTone(noteFreq[note]/2, duration, audioCtx, currentTime);
-	  console.log(note+'='+noteFreq[note]/2);
   }
   currentTime += duration;
   }
