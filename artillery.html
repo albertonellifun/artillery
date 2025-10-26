@@ -244,7 +244,7 @@ const players = [
 let currentPlayer = 0;
 let wind = 0;
 let gameover = true;
-const gravity = 0.05;//9.8
+const gravity = W / 8400;//9.8 e' troppo!!! 420/8400==0.05
 
 const keys = {};
 let inputMode = null; // "angle" o "power" per gestire A+n numeri=angle, P+n numeri=power
@@ -503,7 +503,7 @@ function explode(x, y, radius) {
         //se un giocatore è stato colpito
         if(isGorilla) playGorillaVictory(); else playTankExplosionSound(); 
     
-    spawnCannonExplosion(px,py,p.color);
+        spawnCannonExplosion(px,py,p.color);
 
         const isSelfHit = p === projectile.owner;
         const targetName = isSelfHit ? "HIMSELF" : p.name;
@@ -511,7 +511,7 @@ function explode(x, y, radius) {
 
         message = `${attackerName} DESTROYS ${targetName}!`;
         projectile = null;
-    gameover = true;
+        gameover = true;
         
         //fine del gioco/Reset se un cannone è stato colpito
         setTimeout(reset, isGorilla ? 4000 : 3000); 
@@ -534,8 +534,8 @@ function spawnCannonExplosion(px, py, pcolor) {
     const vx = Math.cos(angle) * speed;
     const vy = Math.sin(angle) * speed;
     explosions.push({
-    ox : px,
-    oy : py,
+      ox : px,
+      oy : py,
       x: px,
       y: py,
       vx: vx,
@@ -575,8 +575,8 @@ function update() {
 
   const p = players[currentPlayer];
   if (!p.isAI) {
-    if (keys['ArrowRight']) p.angle = (Math.max(0, p.angle + (currentPlayer ? 1 : -1))) | 0;
-    if (keys['ArrowLeft']) p.angle = (Math.min(180, p.angle + (currentPlayer ? -1 : 1))) | 0;
+    if (keys['ArrowRight']) p.angle = Math.min(180, Math.max(0, p.angle + (currentPlayer ? 1 : -1))) | 0;
+    if (keys['ArrowLeft']) p.angle = Math.min(180, Math.max(0, p.angle + (currentPlayer ? -1 : 1))) | 0;
     if (keys['ArrowUp']) p.power = (Math.min(100, p.power + 1)) | 0;
     if (keys['ArrowDown']) p.power = (Math.max(5, p.power - 1)) | 0;
     if (keys[' '] ) { launch(p); keys[' '] = false; }
@@ -589,17 +589,17 @@ function update() {
     projectile.x += projectile.vx;
     projectile.y += projectile.vy;
   
-  const xidx = Math.floor(projectile.x);
+    const xidx = Math.floor(projectile.x);
     if (xidx >= 0 && xidx < W) {
       const groundY = H - terrain[xidx];
       if (projectile.y >= groundY) {
         explode(projectile.x, projectile.y, 10);
-    projectile = null;
-    }
+        projectile = null;
+      }
     }
     if (projectile && (projectile.x < -50 || projectile.x > W+50 || projectile.y > H+50)) {
       projectile = null;
-    nextTurn();
+      nextTurn();
     }
   }
   
@@ -712,18 +712,21 @@ function draw() {
   
   //disegna projectile
   if (projectile) {
-    if(isBang) drawProjectileBang();//palla
-    else if(isGorilla) drawProjectileBanana();//banana
-    else drawProjectile();//missiletto standard
+    if(isBang) drawProjectileBang(projectile);//palla
+    else if(isGorilla) drawProjectileBanana(projectile);//banana
+    else drawProjectile(projectile);//missiletto standard
   }
   
   //disegna esplosioni radiali
   for (const e of explosions) {
-    ctx.strokeStyle = e.color;
-    ctx.beginPath();
-    ctx.moveTo(e.ox, e.oy);
-    ctx.lineTo(e.x, e.y);
-    ctx.stroke();
+    if(isGorilla) drawProjectileBanana(e);
+	else {
+      ctx.strokeStyle = e.color;
+      ctx.beginPath();
+      ctx.moveTo(e.ox, e.oy);
+      ctx.lineTo(e.x, e.y);
+      ctx.stroke();
+	}
   }
 
   //hud
@@ -731,8 +734,16 @@ function draw() {
 }
 
 //disegna palla da cannone
-function drawProjectileBang() {
-  ctx.fillStyle = COLORS.gray;
+function drawProjectileBang(projectile) {
+  if(isParallax) {
+    const gradient = ctx.createLinearGradient(projectile.x - 3, projectile.y - 3, 6, 6);
+    gradient.addColorStop(0, isBW ? COLORS.gray : projectile.owner.color);
+    gradient.addColorStop(1, COLORS.darkGray);
+    ctx.fillStyle = gradient;
+  } else {    
+    ctx.fillStyle = isBW ? COLORS.gray : projectile.owner.color;
+  }
+  ctx.fillStyle = isBW ? COLORS.gray : projectile.owner.color;
   ctx.strokeStyle = COLORS.darkGray;
   ctx.beginPath();
   ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
@@ -741,7 +752,7 @@ function drawProjectileBang() {
 }
 
 //disegna projectile
-function drawProjectile() {
+function drawProjectile(projectile) {
   //scia
   ctx.strokeStyle = isBW ? COLORS.green : projectile.owner.color;
   ctx.beginPath();
@@ -755,23 +766,28 @@ function drawProjectile() {
 }
 
 //disegna banana!!!
-function drawProjectileBanana() {
+function drawProjectileBanana(projectile) {
+  const length = 8;      // lunghezza totale
+  const thickness = 1;   // distanza tra arco interno ed esterno
   const angle = Math.atan2(projectile.vy, projectile.vx);
+
   ctx.save();
   ctx.translate(projectile.x, projectile.y);
   ctx.rotate(angle);
-  const length = 8;//lunghezza totale
-  const thickness = 0.5;//distanza tra arco esterno e interno
   ctx.beginPath();
   ctx.strokeStyle = COLORS.yellow;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 0.5;
   ctx.moveTo(-length/2, -thickness);
   ctx.quadraticCurveTo(0, -length, length/2, -thickness);
-  ctx.moveTo(-length/2, thickness);
-  ctx.quadraticCurveTo(0, -length/2, length/2, thickness);
+  ctx.quadraticCurveTo(0, -length/2, -length/2, -thickness);
+  ctx.closePath();
+  ctx.fillStyle = COLORS.lightOrange;
+  ctx.fill();
   ctx.stroke();
   ctx.restore();
 }
+
+
 
 //disegna terreno
 function drawTerrain() {
@@ -837,14 +853,6 @@ function drawTerrainBang() {
     
     ctx.fillRect(x, H - h, 1, h);
 	
-	/*
-	//paesaggio doppio sfumato xxxxxx
-	const gradient = ctx.createLinearGradient(x, 0, x, H);
-    gradient.addColorStop(0, "rgba(255,255,255,0.33)");//COLORS.green);
-	gradient.addColorStop(1, "rgba(0,0,0,0)");//COLORS.darkGreen);	
-    ctx.fillStyle = gradient;
-	ctx.fillRect(x, H - h + 10, 1, h + 10);
-	*/
     
     //bordo scuro
     ctx.fillStyle = isParallax ? COLORS.darkestGreen : COLORS.darkGreen;
@@ -864,7 +872,7 @@ function drawTerrainBang() {
       ctx.lineTo(x + 1 + 20, H);          // vertice destro basso
       ctx.lineTo(x + 1, H);               // vertice sinistro basso
       ctx.closePath();
-      ctx.fill();
+      ctx.fill();	
     }
   }
 }
@@ -872,69 +880,70 @@ function drawTerrainBang() {
 //disegna i palazzi (ogni palazzo largo 40px)
 const windowMap = {}; //memorizza lo stato di ogni finestra
 function drawTerrainGorilla() {
-  for (let x=0;x<W;x++) {
-  const palazzo = (x/40) | 0;//1..n
-  
-  palazzoColor = (palazzo * 2) % terrainColors.length;  
-  ctx.fillStyle = terrainColors[palazzoColor];
-  
-  const h = terrain[x];
-  ctx.fillRect(x, H - h, 1, h);
-  
-  if(isParallax && (x%40 == 39 
-    || (x > 0 && (terrain[x] <= terrain[x-1] || Math.abs(terrain[x] - terrain[x-1]) > 2)))) {
-    const gradient = ctx.createLinearGradient(x, H - h, x + 15, H);
-    gradient.addColorStop(0, terrainColors[palazzoColor]);
-    gradient.addColorStop(0.5, terrainColors[palazzoColor + 1]);
-    gradient.addColorStop(1, COLORS.lightBlue);
-    ctx.fillStyle = gradient;
-  
-    //trapezio
-    ctx.beginPath();
-    ctx.moveTo(x, H - h);          // vertice sinistro alto
-    ctx.lineTo(x + 20, H - h + 10); // vertice destro alto (più in su di 10px)
-    ctx.lineTo(x + 20, H);          // vertice destro basso
-    ctx.lineTo(x, H);               // vertice sinistro basso
-    ctx.closePath();
-    ctx.fill();
-  }
-  
-  
-  let mod = x%40;
-  
-  let f1 = mod > 2 && mod < 8;
-  let f2 = mod > 12 && mod < 18;
-  let f3 = mod > 22 && mod < 28;
-  let f4 = mod > 32 && mod < 38;
-  
-  if( f1 || f2 || f3 || f4) {
-    let floor = -1;
-    //disegna dal basso -> finestre sempre rettangolari
-    //disegna dall'alto -> finestre disastrate :-)
-    for (let y = H /*H - h + 4*/; 
-       y >= H - h /*y < H*/;
-       y -= 14 /* y += 14 */) {
-      floor++;
-      ctx.beginPath()
+  for (let x = 0; x < W; x++) {
+    const h = terrain[x];
+	const palazzo = (x/40) | 0;//1..n
+	
+	palazzoColor = (palazzo * 2) % terrainColors.length;  
+	ctx.fillStyle = terrainColors[palazzoColor];
+    ctx.fillRect(x, H - h, 1, h);
+	
+    if(isParallax && (x%40 == 39 || (x > 0 && (terrain[x] <= terrain[x-1] || Math.abs(terrain[x] - terrain[x-1]) > 13)))) {
+	  const gradient = ctx.createLinearGradient(x + 1, H - h, x + 20, H);
+      gradient.addColorStop(0, terrainColors[palazzoColor]);
+      gradient.addColorStop(0.25, terrainColors[palazzoColor + 1]);
+      gradient.addColorStop(1, COLORS.lightBlue);
+      ctx.fillStyle = gradient;
+      //trapezio
+      ctx.beginPath();
+      ctx.moveTo(x + 1, H - h);       // vertice sinistro alto
+      ctx.lineTo(x + 20, H - h + 10); // vertice destro alto (più in su di 10px)
+      ctx.lineTo(x + 20, H);          // vertice destro basso
+      ctx.lineTo(x + 1, H);           // vertice sinistro basso
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    
+    let mod = x%40;
+    
+    let f1 = mod > 2 && mod < 8;
+    let f2 = mod > 12 && mod < 18;
+    let f3 = mod > 22 && mod < 28;
+    let f4 = mod > 32 && mod < 38;
+    
+    if( f1 || f2 || f3 || f4) {
       
-      //accensione random
-      const windowKey = `${palazzo}_${f1}_${f2}_${f3}_${f4}_${floor}`;
-      if (!(windowKey in windowMap) || Math.random() < 0.00001) {
-        let accesa = Math.random();
-        windowMap[windowKey] =  accesa < 0.1 ? COLORS.white : 
-                                accesa < 0.5 ? COLORS.lightYellow : 
-                                accesa < 0.9 ? COLORS.black : 
-                                COLORS.darkGray;
-      }
-      
-      ctx.strokeStyle = windowMap[windowKey];
-      ctx.moveTo(x, y + 1 );
-      ctx.lineTo(x, y + 11);
-      ctx.stroke();
+	  //disegna dal basso -> finestre sempre rettangolari
+      for (let y = H, floor = -1; y >= H - h;y -= 14, floor++) {
+	  
+	  //disegna dall'alto -> finestre disastrate :-)
+	  //for (let y = H - h + 4, floor = -1; y < H; y += 14, floor++) {
+		
+        //accensione random
+        const windowKey = `${palazzo}_${f1}_${f2}_${f3}_${f4}_${floor}`;
+        if (!(windowKey in windowMap) || Math.random() < 0.00002) {
+          const accesa = Math.random();
+          windowMap[windowKey] =  accesa < 0.1 ? COLORS.white : 
+                                  accesa < 0.5 ? COLORS.lightYellow : 
+                                  accesa < 0.9 ? COLORS.black : 
+                                  COLORS.darkGray;
+        }
+        /*
+		//finestre disegnate come linee == antialiasing, effetto persiana :P
+		ctx.beginPath()
+		ctx.strokeStyle = windowMap[windowKey];
+        ctx.moveTo(x, y + 1 );
+        ctx.lineTo(x, y + 11);
+        ctx.stroke();
+		*/
+		ctx.fillStyle = windowMap[windowKey];
+		ctx.fillRect(x, y + 1, 1, 10);
       }
     }
   }
 }
+
 
 //disegna cannoni
 function drawGun(p) {
@@ -963,7 +972,7 @@ function drawGun(p) {
 
 //carro armato brutto
 function drawCannoneLegacy(p, y) {
-  // CORPO del cannone: trapezio rovesciato
+    //CORPO del cannone: trapezio rovesciato
     ctx.fillStyle = isBW ? COLORS.white : p.color;
     ctx.beginPath();
     ctx.moveTo(p.x - 5, y);     // punto in alto a sinistra
@@ -1001,7 +1010,7 @@ function drawCannoneLegacy(p, y) {
 function drawCannoneBang(p, y) {
   //CANNA: cilindro inclinato con bordo arrotondato
   const a = p.angle * Math.PI / 180;
-  const len = 6;
+  const len = 9;//supposta 6..8, punta piatta 7..9
   const dir = (p.x < W/2 ? 1 : -1);
   const bx = p.x + Math.cos(a) * len * dir;
   const by = y - Math.sin(a) * len;
@@ -1015,11 +1024,12 @@ function drawCannoneBang(p, y) {
   ctx.beginPath();
   ctx.moveTo(0, -thickness / 2);
   ctx.lineTo(len * dir, -thickness / 2);
-  ctx.arc(len * dir, 0, thickness / 2, -Math.PI / 2, Math.PI / 2, dir < 0);
+  //ctx.arc(len * dir, 0, thickness / 2, -Math.PI / 2, Math.PI / 2, dir < 0);//punta tonda
+  ctx.lineTo(len * dir, thickness / 2);//punta piatta
   ctx.lineTo(0, thickness / 2);
   ctx.arc(0, 0, thickness / 2, Math.PI / 2, -Math.PI / 2, dir < 0);
   ctx.closePath();
-  
+    
   if(isParallax) {
     //ombra interna gradiente
     const grad = ctx.createLinearGradient(0, -thickness / 2, 0, thickness / 2);
@@ -1044,6 +1054,8 @@ function drawCannoneBang(p, y) {
   ctx.fillRect(p.x - 2,y - 1, 4, 4);
   ctx.fillStyle = COLORS.gray;
   ctx.fillRect(p.x - 1,y, 2, 2);
+  ctx.fillStyle = COLORS.lightGray;
+  ctx.fillRect(p.x - 1,y, 1, 1);
   
   //ombra cannone
   if(isParallax) drawShadow(p.x, y, 12)
@@ -1065,91 +1077,90 @@ function drawShadow(x, y, shadowRadius) {
 
 //gorilla!
 function drawGorilla(p, y, arms = 3, scale = 0.5) {
-    const S = (v) => v * scale;//scala
+  const S = (v) => v * scale;//scala
   const x = p.x;
 
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.fillStyle = isBW ? COLORS.orange : p.color;
-    ctx.strokeStyle = isBW ? COLORS.darkOrange : p.darkColor;
-    ctx.lineWidth = 1;
-
-    // --- HEAD ---
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = isBW ? COLORS.orange : p.color;
+  ctx.strokeStyle = isBW ? COLORS.darkOrange : p.darkColor;
+  ctx.lineWidth = 1;
+  
+  // --- HEAD ---
   ctx.fillRect(S(-4), S(0), S(6.9), S(6)); // fronte + occhi
-    ctx.fillRect(S(-5), S(2), S(9), S(2));   // mento
+  ctx.fillRect(S(-5), S(2), S(9), S(2));   // mento
 
   // Brow line
+  ctx.beginPath();
+  ctx.moveTo(S(-3), S(2));
+  ctx.lineTo(S(2), S(2));
+  ctx.stroke();
+  
+  // Nose (optional)
+  ctx.fillRect(S(-2), S(4), 1, 1);
+  ctx.fillRect(S(1), S(4), 1, 1);
+  
+  // Neck line
+  ctx.beginPath();
+  ctx.moveTo(S(-3), S(7));
+  ctx.lineTo(S(2), S(7));
+  ctx.stroke();
+  
+  // --- BODY ---
+  ctx.fillRect(S(-8), S(8), S(14.9), S(6));   // upper torso
+  ctx.fillRect(S(-6), S(15), S(10.9), S(5));  // lower torso
+  
+  // --- CHEST SHADING ---
+  ctx.beginPath();
+  ctx.arc(S(-4.9), S(10), S(4.9), 1.5 * Math.PI, 0);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(S(4.9), S(10), S(4.9), Math.PI, 1.5 * Math.PI);
+  ctx.stroke();
+  
+  // --- LEGS ---
+  for (let i = 0; i <= 4; i++) {
     ctx.beginPath();
-    ctx.moveTo(S(-3), S(2));
-    ctx.lineTo(S(2), S(2));
-    ctx.stroke();
-
-    // Nose (optional)
-    ctx.fillRect(S(-2), S(4), 1, 1);
-    ctx.fillRect(S(1), S(4), 1, 1);
-
-    // Neck line
-    ctx.beginPath();
-    ctx.moveTo(S(-3), S(7));
-    ctx.lineTo(S(2), S(7));
-    ctx.stroke();
-
-    // --- BODY ---
-    ctx.fillRect(S(-8), S(8), S(14.9), S(6));   // upper torso
-    ctx.fillRect(S(-6), S(15), S(10.9), S(5));  // lower torso
-
-    // --- CHEST SHADING ---
-    ctx.beginPath();
-    ctx.arc(S(-4.9), S(10), S(4.9), 1.5 * Math.PI, 0);
+    ctx.arc(S(i), S(25), S(10), 3 * Math.PI / 4, 9 * Math.PI / 8);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(S(4.9), S(10), S(4.9), Math.PI, 1.5 * Math.PI);
+    ctx.arc(S(-6 + i - 0.1), S(25), S(10), 15 * Math.PI / 8, Math.PI / 4);
     ctx.stroke();
+  }
 
-    // --- LEGS ---
-    for (let i = 0; i <= 4; i++) {
-        ctx.beginPath();
-        ctx.arc(S(i), S(25), S(10), 3 * Math.PI / 4, 9 * Math.PI / 8);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(S(-6 + i - 0.1), S(25), S(10), 15 * Math.PI / 8, Math.PI / 4);
-        ctx.stroke();
+  // --- ARMS ---
+  for (let i = -5; i <= -1; i++) {
+    if (arms === 1) {
+      // Right arm up
+      ctx.beginPath();
+      ctx.arc(S(i - 0.1), S(14), S(9), 3 * Math.PI / 4, 5 * Math.PI / 4);
+      ctx.stroke();
+	  
+      ctx.beginPath();
+      ctx.arc(S(4.9 + i), S(4), S(9), 7 * Math.PI / 4, Math.PI / 4);
+      ctx.stroke();
+    } else if (arms === 2) {
+      // Left arm up
+      ctx.beginPath();
+      ctx.arc(S(i - 0.1), S(4), S(9), 3 * Math.PI / 4, 5 * Math.PI / 4);
+      ctx.stroke();
+	  
+      ctx.beginPath();
+      ctx.arc(S(4.9 + i), S(14), S(9), 7 * Math.PI / 4, Math.PI / 4);
+      ctx.stroke();
+    } else {
+      // Both arms down
+      ctx.beginPath();
+      ctx.arc(S(i - 0.1), S(14), S(9), 3 * Math.PI / 4, 5 * Math.PI / 4);
+      ctx.stroke();
+	  
+      ctx.beginPath();
+      ctx.arc(S(4.9 + i), S(14), S(9), 7 * Math.PI / 4, Math.PI / 4);
+      ctx.stroke();
     }
-
-    // --- ARMS ---
-    for (let i = -5; i <= -1; i++) {
-        if (arms === 1) {
-            // Right arm up
-            ctx.beginPath();
-            ctx.arc(S(i - 0.1), S(14), S(9), 3 * Math.PI / 4, 5 * Math.PI / 4);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(S(4.9 + i), S(4), S(9), 7 * Math.PI / 4, Math.PI / 4);
-            ctx.stroke();
-        } else if (arms === 2) {
-            // Left arm up
-            ctx.beginPath();
-            ctx.arc(S(i - 0.1), S(4), S(9), 3 * Math.PI / 4, 5 * Math.PI / 4);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(S(4.9 + i), S(14), S(9), 7 * Math.PI / 4, Math.PI / 4);
-            ctx.stroke();
-        } else {
-            // Both arms down
-            ctx.beginPath();
-            ctx.arc(S(i - 0.1), S(14), S(9), 3 * Math.PI / 4, 5 * Math.PI / 4);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(S(4.9 + i), S(14), S(9), 7 * Math.PI / 4, Math.PI / 4);
-            ctx.stroke();
-        }
-    }
-
-    ctx.restore();
+  }
+  
+  ctx.restore();
 }
 
 
@@ -1166,11 +1177,22 @@ function drawWindFlag() {
   if(isBang || isGorilla) ctx.lineTo(flagX, flagY - 20);
   else ctx.lineTo(flagX, flagY - 12);
   ctx.stroke();
-
+  
+  if(isParallax) {
+    //asta doppia in caso di parallax
+    ctx.strokeStyle = isGorilla ? COLORS.lightGray : COLORS.darkGray;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(flagX + 1, flagY);
+    if(isBang || isGorilla) ctx.lineTo(flagX + 1, flagY - 20);
+    else ctx.lineTo(flagX + 1, flagY - 12);
+    ctx.stroke();
+  }
+  
   //disegna bandiera
   let windIntensity = Math.abs(wind) | 0;
   const rectWidth = windIntensity;
-  const rectHeight = 5;
+  const rectHeight = 6;
 
   if(isBang) {
     if (wind >= 0) {
@@ -1215,7 +1237,7 @@ function drawWindFlag() {
   }
   
   //ombra bandiera
-  if(isParallax && isBang) drawShadow(flagX, flagY - 2, 8)  
+  if(isParallax && isBang) drawShadow(flagX, flagY - 2, 8);
 }
 
 //disegna dati player
@@ -1692,18 +1714,18 @@ window.addEventListener('keydown', e => {
 
 //popup orrenda angolo
 function enterAngle() {
-    let aa = prompt('ENTER ANGLE (0-180)');
+  let aa = prompt('ENTER ANGLE (0-180)');
   const value = parseInt(aa);
-    const p = players[currentPlayer];
-    p.angle = Math.max(0, Math.min(180, value)) | 0;
+  const p = players[currentPlayer];
+  p.angle = Math.max(0, Math.min(180, value)) | 0;
 }
 
 //popup orrenda potenza
 function enterPower() {
   let pp = prompt('ENTER POWER (0-100)');
   const value = parseInt(pp);
-    const p = players[currentPlayer];
-    p.power = Math.max(5, Math.min(100, value)) | 0;
+  const p = players[currentPlayer];
+  p.power = Math.max(5, Math.min(100, value)) | 0;
 }
 
 window.addEventListener('keyup', e=>{ keys[e.key] = false });
@@ -1746,8 +1768,8 @@ document.getElementById('touch-controls').addEventListener('click', e => {
   if (gameover) return;
   
   switch (act) {
-    case 'left':  p.angle = Math.min(180, p.angle + (currentPlayer ? -1 : 1)); break;
-    case 'right': p.angle = Math.max(0, p.angle - (currentPlayer ? -1 : 1)); break;
+    case 'left':  p.angle = Math.min(180, Math.max(0, p.angle + (currentPlayer ? -1 : 1))); break;
+    case 'right': p.angle = Math.min(180, Math.max(0, p.angle - (currentPlayer ? -1 : 1))); break;
     case 'power-up':   p.power = Math.min(100, p.power + 5); break;
     case 'power-down': p.power = Math.max(5, p.power - 5); break;
     case 'fire': launch(p); break;
