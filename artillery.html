@@ -547,6 +547,7 @@ function spawnCannonExplosion(px, py, pcolor) {
 }
 
 
+
 // ------------------------------------------------
 // TURN MANAGEMENT
 function nextTurn() {
@@ -657,7 +658,7 @@ function drawSkyAccessories() {
     let c4x = ((currentTimeMMSS % c4Period) / c4Period * W + 160) % W | 0;
     let c5x = ((currentTimeMMSS % c5Period) / c5Period * W + 270) % W | 0;
 	
-	console.log(sunx,suny,c1x,c2x,c3x,c4x,c5x);
+	//console.log(sunx,suny,c1x,c2x,c3x,c4x,c5x);
 	
     if(currentTime.getHours() > 19) {
       //luna
@@ -722,6 +723,7 @@ function draw() {
   //disegna esplosioni radiali
   for (const e of explosions) {
     if(isGorilla) drawProjectileBanana(e);
+	else if(isBang) drawFlame(e);
 	else {
       ctx.strokeStyle = e.color;
       ctx.beginPath();
@@ -735,12 +737,29 @@ function draw() {
   drawHUD();
 }
 
+//fiamme quasi realistiche
+function drawFlame(p) {
+  const lifeRatio = p.life / 80;//life={40..80}, lifeRation={0..1} per la sfumatura
+  const size = p.life / 10;
+  
+  const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size);
+  gradient.addColorStop(0, "rgba(255,255,100," + lifeRatio + ")");
+  gradient.addColorStop(0.5, "rgba(255,255,100," + lifeRatio * 0.8 + ")");
+  gradient.addColorStop(1, "rgba(255,0,0,0)");
+
+  ctx.beginPath();
+  ctx.fillStyle = gradient;
+  ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+
 //disegna palla da cannone
 function drawProjectileBang(projectile) {
   ctx.beginPath();
   ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
-  ctx.fillStyle = isBW ? COLORS.gray : projectile.owner.color;
-  ctx.strokeStyle = COLORS.darkGray;
+  ctx.fillStyle = COLORS.darkGray;//isBW ? COLORS.gray : projectile.owner.color;
+  ctx.strokeStyle = COLORS.black;//COLORS.darkGray;
   ctx.fill();
   ctx.stroke();
 }
@@ -794,6 +813,7 @@ function drawTerrain() {
   terrainGradient.addColorStop(0, lightColor);
   terrainGradient.addColorStop(1, darkestColor);
   
+  //sfumatura spostata in basso == appena piu chiara 
   const terrainGradientXXX = ctx.createLinearGradient(0, 30, 0, H);
   terrainGradientXXX.addColorStop(0, lightColor);
   terrainGradientXXX.addColorStop(1, darkestColor);
@@ -819,8 +839,8 @@ function drawTerrain() {
 	//disegna parallasse solo se il terreno dopo e' piu' basso!
     if(isParallax && x < W - 1 && terrain[x]>terrain[x+1]){
       const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
-      gradient.addColorStop(0, isBang ? COLORS.darkestGreen : isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
-      gradient.addColorStop(1, isBang ? COLORS.green : isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
+      gradient.addColorStop(0, isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
+      gradient.addColorStop(1, isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
       ctx.fillStyle = gradient;
       //trapezio
       ctx.beginPath();
@@ -845,7 +865,7 @@ function drawTerrainBang() {
     gradient.addColorStop(0, COLORS.lightGreen);
     gradient.addColorStop(1, COLORS.darkestGreen);
     terrainGradient = gradient;
-	
+	//sfumatura spostata in basso == appena piu chiara 
 	const gradientXXX = ctx.createLinearGradient(0, 10, 0, H);
     gradientXXX.addColorStop(0, COLORS.lightGreen);
     gradientXXX.addColorStop(1, COLORS.darkestGreen);
@@ -870,9 +890,9 @@ function drawTerrainBang() {
 	
 	//disegna parallasse solo se il terreno dopo e' piu' basso!
     if(isParallax && x > 0 && x < W - 1 && terrain[x]>terrain[x+1]){
-      const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
-      gradient.addColorStop(0, isBang ? COLORS.darkestGreen : isBW ? COLORS.darkestGreen : terrainColors[currentTerrainColorDark]);
-      gradient.addColorStop(1, isBang ? COLORS.green : isBW ? COLORS.darkGreen : terrainColors[currentTerrainColor]);
+      const gradient = ctx.createLinearGradient(x + 1, H - h, x + 21, H - h);
+      gradient.addColorStop(0, COLORS.darkestGreen);
+      gradient.addColorStop(1, COLORS.green);
       ctx.fillStyle = gradient;
 	  //rettangolare
       //ctx.fillRect(x + 1, H - h, 15, h);
@@ -1210,6 +1230,15 @@ function drawWindFlag() {
   const rectHeight = 6;
 
   if(isBang) {
+	//palla sopra
+	ctx.beginPath();
+    ctx.arc(flagX, flagY - 22, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS.lightGray;
+    ctx.strokeStyle = COLORS.darkGray;
+	ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+	
     if (wind >= 0) {
       //bandiera verso destra, parte alta
       ctx.fillStyle = isBW ? COLORS.white : COLORS.yellow;
@@ -1217,6 +1246,7 @@ function drawWindFlag() {
       ctx.strokeStyle = COLORS.darkGray;
       ctx.strokeRect(flagX, flagY - 18, rectWidth / 2, rectHeight);
       // bandiera verso destra → punta rientrante verso l’asta
+	  ctx.beginPath();
       ctx.moveTo(flagX + 2, flagY - 12);                          // attacco asta (alto)
       ctx.lineTo(flagX + 2 + rectWidth, flagY - 12);              // bordo alto
       ctx.lineTo(flagX + 2 + rectWidth - 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
@@ -1229,6 +1259,7 @@ function drawWindFlag() {
       ctx.strokeStyle = COLORS.darkGray;
       ctx.strokeRect(flagX - rectWidth / 2, flagY - 18, rectWidth / 2, rectHeight);
       // bandiera verso sinistra → punta rientrante verso l’asta
+	  ctx.beginPath();
       ctx.moveTo(flagX - 2, flagY - 12);                          // attacco asta (alto)
       ctx.lineTo(flagX - 2 - rectWidth, flagY - 12);              // bordo alto
       ctx.lineTo(flagX - 2 - rectWidth + 3, flagY - 12 + rectHeight / 2); // taglio triangolare interno
@@ -1338,41 +1369,41 @@ function drawHUD() {
 //SUONI
 function playExplosionSound() {
   if(isMute) return;
-    const now = audioCtx.currentTime;
+  const now = audioCtx.currentTime;
 
-    // 1. Crea un generatore di Rumore Bianco (Noise Buffer)
-    const bufferSize = audioCtx.sampleRate * 0.5; // 0.5 secondi
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const output = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      output[i] = Math.random() * 2 - 1; // Riempie il buffer con rumore casuale (statico)
-    }
+  // 1. Crea un generatore di Rumore Bianco (Noise Buffer)
+  const bufferSize = audioCtx.sampleRate * 0.5; // 0.5 secondi
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const output = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    output[i] = Math.random() * 2 - 1; // Riempie il buffer con rumore casuale (statico)
+  }
 
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
 
-    // 2. Crea i nodi di Guadagno e Filtro
-    const noiseGain = audioCtx.createGain();
-    const filter = audioCtx.createBiquadFilter();
+  // 2. Crea i nodi di Guadagno e Filtro
+  const noiseGain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
 
-    // Imposta il filtro per un suono "sordo" e breve (filtro passa basso)
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1000, now); // Frequenza di taglio iniziale
-    filter.frequency.exponentialRampToValueAtTime(10, now + 0.3); // Decadimento rapido della frequenza
+  // Imposta il filtro per un suono "sordo" e breve (filtro passa basso)
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(1000, now); // Frequenza di taglio iniziale
+  filter.frequency.exponentialRampToValueAtTime(10, now + 0.3); // Decadimento rapido della frequenza
 
-    // Connessioni: Rumore -> Filtro -> Guadagno -> Destinazione
-    noise.connect(filter);
-    filter.connect(noiseGain);
-    noiseGain.connect(audioCtx.destination);
+  // Connessioni: Rumore -> Filtro -> Guadagno -> Destinazione
+  noise.connect(filter);
+  filter.connect(noiseGain);
+  noiseGain.connect(audioCtx.destination);
 
-    // 3. Envelope (ADSR)
-    noiseGain.gain.setValueAtTime(0.5, now); // Volume iniziale
-    // Decay rapido del volume (il "botto" finisce subito)
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3); 
+  // 3. Envelope (ADSR)
+  noiseGain.gain.setValueAtTime(0.5, now); // Volume iniziale
+  // Decay rapido del volume (il "botto" finisce subito)
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3); 
 
-    // 4. Avvia e Ferma
-    noise.start(now);
-    noise.stop(now + 0.3);
+  // 4. Avvia e Ferma
+  noise.start(now);
+  noise.stop(now + 0.3);
 }
 
 function playShootSound() {
