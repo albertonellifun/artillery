@@ -632,58 +632,60 @@ function clearSky() {
 
 //ghghgh
 function drawSkyAccessories() {
-  //BANG ha le nuvolette + sole
+  //BANG ha le nuvolette + sole + uccelli
   //GORILLA ha solo il SOLE
-  if(isBang) {
+  if(isBang || isGorilla) {
     let currentTime = new Date();
-    let currentTimeMMSS = currentTime.getMinutes() * 60 + currentTime.getSeconds();//W/2 + minuti + secondi
-    let posx = (W/2 + currentTimeMMSS);
+    let currentTimeMMSS = currentTime.getMinutes() * 60 + currentTime.getSeconds();
+	
+    //sole - ciclo completo ogni x=10 minuti
+    let sunPeriod = 1200;
     
-    let sunx = (posx / 10) % W | 0;
-    let c1x = (40 + (posx / 3)) % W  | 0;
-    let c2x = (70 + (posx / 4)) % W | 0;
-    let c3x = (100 + (posx / 5)) % W | 0;
-    let c4x = (140 + (posx / 4)) % W | 0;
-    let c5x = (160 + (posx / 3)) % W | 0;
+    //nuvole - periodi diversi 
+    let c1Period = 2400;
+    let c2Period = 800;
+    let c3Period = 2000;
+    let c4Period = 1200;
+    let c5Period = 1600;
     
+	let sunx = ((currentTimeMMSS % sunPeriod) / sunPeriod * W) % W | 0;
+    let suny = 50 - (30 * Math.sin(Math.PI * sunx / W)) | 0;//max=50, min=20
+	
+    let c1x = ((currentTimeMMSS % c1Period) / c1Period * W + 40) % W | 0;
+    let c2x = ((currentTimeMMSS % c2Period) / c2Period * W + 70) % W | 0;
+    let c3x = ((currentTimeMMSS % c3Period) / c3Period * W + 120) % W | 0;
+    let c4x = ((currentTimeMMSS % c4Period) / c4Period * W + 160) % W | 0;
+    let c5x = ((currentTimeMMSS % c5Period) / c5Period * W + 270) % W | 0;
+	
+	console.log(sunx,suny,c1x,c2x,c3x,c4x,c5x);
+	
     if(currentTime.getHours() > 19) {
       //luna
-      drawMoon(sunx, 20, 10);
-      //nuvole
-      drawCloud(c3x, 25, 0.25, 1);
-      drawCloud(c4x, 25, 0.35, 3);
-      drawCloud(c5x, 30, 0.25, 2);
+      drawMoon(sunx, suny, 10);
+	  if(isBang) {
+        //nuvole
+        drawCloud(c3x, 25, 0.25, 1);
+        drawCloud(c4x, 25, 0.35, 3);
+        drawCloud(c5x, 30, 0.25, 2);
+	  }
     } else {
       //sole
       let ooo = projectile != null && Math.abs(projectile.x - sunx) < 10 && Math.abs(projectile.y - 20) < 10;
-      drawSun(sunx, 20, 10, ooo, 8);
-      //nuvole
-      drawCloud(c1x, 25, 0.25, 1);
-      drawCloud(c2x, 35, 0.45, 2);
-      drawCloud(c3x, 25, 0.35, 3);
-      drawCloud(c4x, 30, 0.55, 1);
-      drawCloud(c5x, 30, 0.25, 2);
-      //uccelli
-      for(var i=0;i<3;i++) {  
-        drawBird((60 + i*W/3 + c1x) % W, 30 + i*2);
-        drawBird((75 + i*W/3 + c1x) % W, 44 + i*2);
-        drawBird((90 + i*W/3 + c1x) % W, 35 - i*2);
-      }
-    }
-  } else if(isGorilla) {
-    let currentTime = new Date();
-    let currentTimeMMSS = currentTime.getMinutes() * 60 + currentTime.getSeconds();//W/2 + minuti + secondi
-    let posx = (W/2 + currentTimeMMSS);
-  
-    let sunx = (posx / 10) % W | 0;
-  
-    if(currentTime.getHours() > 19) {
-      //luna
-      drawMoon(sunx, 20, 10);
-    } else {
-      //sole
-      let ooo = projectile != null && Math.abs(projectile.x - sunx) < 10 && Math.abs(projectile.y - 20) < 10;
-      drawSun(sunx, 20, 9, ooo, 16);
+      drawSun(sunx, suny, 10, ooo, isBang ? 8 : 16);
+	  if(isBang) {
+        //nuvole
+        drawCloud(c1x, 25, 0.25, 1);
+        drawCloud(c2x, 35, 0.45, 2);
+        drawCloud(c3x, 25, 0.35, 3);
+        drawCloud(c4x, 30, 0.55, 1);
+        drawCloud(c5x, 30, 0.25, 2);
+        //uccelli
+        for(let i=0; i<3; i++) {  
+          drawBird((60 + i*W/3 + c1x) % W, 30 + i*2);
+          drawBird((75 + i*W/3 + c1x) % W, 44 + i*2);
+          drawBird((90 + i*W/3 + c1x) % W, 35 - i*2);
+        }
+	  }
     }
   }
 }
@@ -792,7 +794,11 @@ function drawTerrain() {
   terrainGradient.addColorStop(0, lightColor);
   terrainGradient.addColorStop(1, darkestColor);
   
-  for (let x=0; x<W; x++){
+  const terrainGradientXXX = ctx.createLinearGradient(0, 30, 0, H);
+  terrainGradientXXX.addColorStop(0, lightColor);
+  terrainGradientXXX.addColorStop(1, darkestColor);
+  
+  for (let x = 0; x < W; x++){
     const h = terrain[x];
 	const useAltColor = (x % 2 === 0 || scanLinesEnabled);
     
@@ -803,6 +809,12 @@ function drawTerrain() {
     }
 	
     ctx.fillRect(x, H - h, 1, h);
+	
+	//bordo chiaro per accentuare ombra cannoni
+	if(isParallax && false) {
+	  ctx.fillStyle = useAltColor ? terrainGradientXXX : darkestColor;
+	  ctx.fillRect(x, H - h + 1, 1, H / h);
+	}
     
 	//disegna parallasse solo se il terreno dopo e' piu' basso!
     if(isParallax && x < W - 1 && terrain[x]>terrain[x+1]){
@@ -826,15 +838,21 @@ function drawTerrain() {
 function drawTerrainBang() {
   //fuori dal ciclo per la pesantezza
   let terrainGradient = COLORS.green;
+  let terrainGradientXXX = COLORS.green;
   if(isParallax) {
     //sfumatura terreno
     const gradient = ctx.createLinearGradient(0, 0, 0, H);
     gradient.addColorStop(0, COLORS.lightGreen);
     gradient.addColorStop(1, COLORS.darkestGreen);
     terrainGradient = gradient;
+	
+	const gradientXXX = ctx.createLinearGradient(0, 10, 0, H);
+    gradientXXX.addColorStop(0, COLORS.lightGreen);
+    gradientXXX.addColorStop(1, COLORS.darkestGreen);
+    terrainGradientXXX = gradientXXX;
   }  
     
-  for (let x=0; x<W; x++){
+  for (let x = 0; x < W; x++){
     const h = terrain[x];
     
     ctx.fillStyle = terrainGradient;
@@ -843,7 +861,13 @@ function drawTerrainBang() {
     //bordo scuro
     ctx.fillStyle = isParallax ? COLORS.darkestGreen : COLORS.darkGreen;
     ctx.fillRect(x, H - h, 1, 1);
-    
+	
+	//bordo chiaro 5px per accentuare ombra cannoni
+	if(isParallax && false) {
+	  ctx.fillStyle = terrainGradientXXX;
+	  ctx.fillRect(x, H - h + 1, 1, 5);
+	}
+	
 	//disegna parallasse solo se il terreno dopo e' piu' basso!
     if(isParallax && x > 0 && x < W - 1 && terrain[x]>terrain[x+1]){
       const gradient = ctx.createLinearGradient(x + 1, H - h, x + 15, H - h);
